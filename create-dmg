@@ -12,11 +12,11 @@
 set -e;
 
 function pure_version() {
-  echo '$Revision: 10 $' | perl -ne 'if(/Revision:\s*(\d+)/) {print $1} else {print "UNKNOWN"}'
+  echo '[[ver]]'
 }
 
 function version() {
-  echo "EclipseOSXRepackager r$(pure_version)"
+  echo "create-dmg $(pure_version)"
 }
 
 function usage() {
