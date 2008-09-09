@@ -109,17 +109,20 @@ test -d "$AUX_PATH" || {
 
 # Create the image
 echo "Creating disk image..."
-rm -f "${DMG_TEMP_NAME}"
-hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW "${DMG_TEMP_NAME}"
+test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
+hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size 300m "${DMG_TEMP_NAME}"
 
 # mount it
 echo "Mounting disk image..."
 MOUNT_DIR="/Volumes/${VOLUME_NAME}"
+echo "Mount directory: $MOUNT_DIR"
 DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+echo "Device name:     $DEV_NAME"
 
 #cp RightDS_Store "/Volumes/${VOLUME_NAME}/.DS_Store"
 
 if ! test -z "$BACKGROUND_FILE"; then
+  echo "Copying background file..."
   test -d "$MOUNT_DIR/.background" || mkdir "$MOUNT_DIR/.background"
   cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
@@ -136,9 +139,11 @@ sleep 4
 # make sure it's not world writeable
 echo "Fixing permissions..."
 chmod -Rf go-w "${MOUNT_DIR}" || true
+echo "Done fixing permissions."
 
 # make the top window open itself on mount:
 if [ -x /usr/local/bin/openUp ]; then
+    echo "Applying openUp..."
     /usr/local/bin/openUp "${MOUNT_DIR}"
 fi
 
