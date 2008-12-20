@@ -138,7 +138,7 @@ sleep 4
 
 # make sure it's not world writeable
 echo "Fixing permissions..."
-chmod -Rf go-w "${MOUNT_DIR}" || true
+chmod -Rf go-w "${MOUNT_DIR}" >& /dev/null || true
 echo "Done fixing permissions."
 
 # make the top window open itself on mount:
