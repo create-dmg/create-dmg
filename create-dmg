@@ -107,6 +107,11 @@ test -d "$AUX_PATH" || {
   exit 1
 }
 
+if [ -f $SRC_FOLDER/.DS_Store ]; then
+    echo "Deleting any .DS_Store in source folder"
+    rm $SRC_FOLDER/.DS_Store
+fi
+
 # Create the image
 echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
@@ -118,8 +123,6 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 echo "Mount directory: $MOUNT_DIR"
 DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
-
-#cp RightDS_Store "/Volumes/${VOLUME_NAME}/.DS_Store"
 
 if ! test -z "$BACKGROUND_FILE"; then
   echo "Copying background file..."

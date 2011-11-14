@@ -29,6 +29,9 @@ on run (volumeName)
 			
 			-- Positioning
 			POSITION_CLAUSE
+
+            close
+            open
 			
 			update without registering applications
 			-- Force saving of the size
