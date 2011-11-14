@@ -27,6 +27,8 @@ function usage() {
   echo "Options:"
   echo "  --volname name"
   echo "      set volume name (displayed in the Finder sidebar and window title)"
+  echo "  --volicon icon.icns"
+  echo "      set volume icon"
   echo "  --background pic.png"
   echo "      set folder background image (provide png, gif, jpg)"
   echo "  --window-pos x y"
@@ -54,6 +56,9 @@ while test "${1:0:1}" = "-"; do
   case $1 in
     --volname)
       VOLUME_NAME="$2"
+      shift; shift;;
+    --volicon)
+      VOLUME_ICON_FILE="$2"
       shift; shift;;
     --background)
       BACKGROUND_FILE="$2"
@@ -130,6 +135,12 @@ if ! test -z "$BACKGROUND_FILE"; then
   cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
+if ! test -z "$VOLUME_ICON_FILE"; then
+  echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
+  cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
+  SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
+fi
+
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
 cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" >"$APPLESCRIPT"
@@ -148,6 +159,11 @@ echo "Done fixing permissions."
 if [ -x /usr/local/bin/openUp ]; then
     echo "Applying openUp..."
     /usr/local/bin/openUp "${MOUNT_DIR}"
+fi
+
+if ! test -z "$VOLUME_ICON_FILE"; then
+   # tell the volume that it has a special file attribute
+   SetFile -a C "$MOUNT_DIR"
 fi
 
 # unmount
