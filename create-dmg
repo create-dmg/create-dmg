@@ -41,6 +41,8 @@ function usage() {
   echo "      set position of the file's icon"
   echo "  --custom-icon file_name custom_icon_or_sample_file x y"
   echo "      set position and custom icon"
+  echo "  --app-drop-link x y"
+  echo "      make a drop link to Applications, at location x,y"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -86,6 +88,11 @@ while test "${1:0:1}" = "-"; do
       version; exit 0;;
     --pure-version)
       pure_version; exit 0;;
+    --app-drop-link)
+      APPLICATION_LINK=$2
+      APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
+"
+      shift; shift; shift;;
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
@@ -137,9 +144,11 @@ if ! test -z "$BACKGROUND_FILE"; then
   cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
-echo "making link to applications"
-echo $MOUNT_DIR
-ln -s /Applications "$MOUNT_DIR/Applications"
+if ! test -z "$APPLICATION_LINK"; then
+  echo "making link to Applications dir"
+  echo $MOUNT_DIR
+  ln -s /Applications "$MOUNT_DIR/Applications"
+fi
 
 if ! test -z "$VOLUME_ICON_FILE"; then
   echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
@@ -149,12 +158,14 @@ fi
 
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
-cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" >"$APPLESCRIPT"
+cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" >"$APPLESCRIPT"
 
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
 echo "Done running the applescript..."
 sleep 4
+
+rm "$APPLESCRIPT"
 
 # make sure it's not world writeable
 echo "Fixing permissions..."

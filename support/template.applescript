@@ -30,6 +30,8 @@ on run (volumeName)
 			-- Positioning
 			POSITION_CLAUSE
 
+			-- Application Link Clause
+			APPLICATION_CLAUSE
             close
             open
 			
