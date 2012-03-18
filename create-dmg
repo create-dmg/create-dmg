@@ -119,9 +119,9 @@ test -d "$AUX_PATH" || {
   exit 1
 }
 
-if [ -f '$SRC_FOLDER/.DS_Store' ]; then
+if [ -f "$SRC_FOLDER/.DS_Store" ]; then
     echo "Deleting any .DS_Store in source folder"
-    rm $SRC_FOLDER/.DS_Store
+    rm "$SRC_FOLDER/.DS_Store"
 fi
 
 # Create the image
