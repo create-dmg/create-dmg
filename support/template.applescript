@@ -29,7 +29,10 @@ on run (volumeName)
 			
 			-- Positioning
 			POSITION_CLAUSE
-
+			
+			-- Hiding
+			HIDING_CLAUSE
+			
 			-- Application Link Clause
 			APPLICATION_CLAUSE
             close
