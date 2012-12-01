@@ -173,10 +173,9 @@ chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions."
 
 # make the top window open itself on mount:
-if [ -x /usr/local/bin/openUp ]; then
-    echo "Applying openUp..."
-    /usr/local/bin/openUp "${MOUNT_DIR}"
-fi
+echo "Blessing started"
+bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
+echo "Blessing finished"
 
 if ! test -z "$VOLUME_ICON_FILE"; then
    # tell the volume that it has a special file attribute
