@@ -39,6 +39,8 @@ function usage() {
   echo "      set window icons size (up to 128)"
   echo "  --icon file_name x y"
   echo "      set position of the file's icon"
+  echo "  --hide-extension file_name"
+  echo "      hide the extension of file"
   echo "  --custom-icon file_name custom_icon_or_sample_file x y"
   echo "      set position and custom icon"
   echo "  --app-drop-link x y"
@@ -80,6 +82,9 @@ while test "${1:0:1}" = "-"; do
       POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
 "
       shift; shift; shift; shift;;
+    --hide-extension)
+      HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true"
+      shift; shift;;
     --custom-icon)
       shift; shift; shift; shift; shift;;
     -h | --help)
@@ -158,7 +163,7 @@ fi
 
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
-cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" >"$APPLESCRIPT"
+cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
