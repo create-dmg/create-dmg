@@ -1,13 +1,6 @@
 #! /bin/bash
 
 # Create a read-only disk image of the contents of a folder
-#
-# Usage: make-diskimage <image_file>
-#                       <src_folder>
-#                       <volume_name>
-#                       <applescript>
-#                       <artpath>
-#                       <eula_resource_file>
 
 set -e;
 
@@ -45,6 +38,8 @@ function usage() {
   echo "      set position and custom icon"
   echo "  --app-drop-link x y"
   echo "      make a drop link to Applications, at location x,y"
+  echo "  --eula eula_file"
+  echo "      attach a license file to the dmg"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -98,6 +93,9 @@ while test "${1:0:1}" = "-"; do
       APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
 "
       shift; shift; shift;;
+    --eula)
+      EULA_RSRC=$2
+      shift; shift;;
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
@@ -117,7 +115,7 @@ DMG_TEMP_NAME="$DMG_DIR/rw.${DMG_NAME}"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 
-AUX_PATH="$(cd "$(dirname $0)"; pwd)/support"
+AUX_PATH="$(dirname $(readlink $0))/support"
 
 test -d "$AUX_PATH" || {
   echo "Cannot find support directory: $AUX_PATH"
@@ -199,9 +197,7 @@ rm -f "${DMG_TEMP_NAME}"
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
         echo "adding EULA resources"
-        hdiutil unflatten "${DMG_DIR}/${DMG_NAME}"
-        /Developer/Tools/ResMerger -a "${EULA_RSRC}" -o "${DMG_DIR}/${DMG_NAME}"
-        hdiutil flatten "${DMG_DIR}/${DMG_NAME}"
+        "${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
 fi
 
 echo "Disk image done"
