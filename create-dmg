@@ -137,6 +137,11 @@ hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsar
 # mount it
 echo "Mounting disk image..."
 MOUNT_DIR="/Volumes/${VOLUME_NAME}"
+
+# try unmount dmg if it was mounted previously (e.g. user installed app and mounted dmg)
+echo "Unmounting disk image..."
+test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
+
 echo "Mount directory: $MOUNT_DIR"
 DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
