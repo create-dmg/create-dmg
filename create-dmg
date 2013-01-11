@@ -138,8 +138,9 @@ hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsar
 echo "Mounting disk image..."
 MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 
-# try unmount dmg if it was mounted previously (e.g. user installed app and mounted dmg)
+# try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
+DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
