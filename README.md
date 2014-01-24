@@ -6,7 +6,7 @@
 	----------------------------------------------------------
 	1. Create a directory (source_folder), then put all the files 
 	   you'll want in your final .dmg in this directory. Typically this 
-           includes your .app, a background.png, and a documentation file.
+	   includes your .app, a background.png, and a documentation file.
 	2. Run the create-dmg script from your terminal, pass in your custom 
 	   options, and your dmg will be generated!
 
@@ -50,8 +50,6 @@
 		  attach a license file to the dmg
 	  --no-internet-enable
 		  disable automatic mount&copy
-	  --version         show tool version number
-	  -h, --help        display this help
 	
 	----------------------------------------------------------
 	Requirements:
