@@ -42,7 +42,7 @@ All contents of source\_folder will be copied into the disk image.
 > \#!/bin/sh  
 > test -f Application-Installer.dmg && rm Application-Installer.dmg  
 > create-dmg \  
->   --volname "Application Installer" \  
+> --volname "Application Installer" \  
 > --volicon "application\_icon.icns" \  
 > --background "installer\_background.png" \  
 > --window-pos 200 120 \  
