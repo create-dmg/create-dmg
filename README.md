@@ -26,6 +26,7 @@ All contents of source\_folder will be copied into the disk image.
 *   **--background [pic.png]:** set folder background image (provide png, gif, jpg)    
 *   **--window-pos [x y]:** set position the folder window    
 *   **--window-size [width height]:** set size of the folder window    
+*   **--text-size [text size]:** set window text size (10-16)    
 *   **--icon-size [icon size]:** set window icons size (up to 128)    
 *   **--icon [file name] [x y]:** set position of the file's icon    
 *   **--hide-extension [file name]:** hide the extension of file    
