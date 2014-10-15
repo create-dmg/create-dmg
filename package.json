@@ -1,0 +1,9 @@
+{
+  "name": "create-dmg",
+  "version": "1.0.0.2",
+  "description": "A shell script to build fancy DMGs",
+  "global": "true",
+  "install": "chmod +x create-dmg && install create-dmg /usr/local/bin",
+  "scripts": [ "create-dmg" ]
+}
+
