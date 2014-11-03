@@ -28,6 +28,8 @@ function usage() {
   echo "      set position the folder window"
   echo "  --window-size width height"
   echo "      set size of the folder window"
+  echo "  --text-size text_size"
+  echo "      set window text size (10-16)"
   echo "  --icon-size icon_size"
   echo "      set window icons size (up to 128)"
   echo "  --icon file_name x y"
@@ -52,6 +54,7 @@ WINY=60
 WINW=500
 WINH=350
 ICON_SIZE=128
+TEXT_SIZE=16
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -68,6 +71,9 @@ while test "${1:0:1}" = "-"; do
       shift; shift;;
     --icon-size)
       ICON_SIZE="$2"
+      shift; shift;;
+    --text-size)
+      TEXT_SIZE="$2"
       shift; shift;;
     --window-pos)
       WINX=$2; WINY=$3
@@ -172,7 +178,7 @@ fi
 
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
-cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
+cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
