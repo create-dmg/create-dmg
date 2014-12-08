@@ -175,7 +175,7 @@ if ! test -z "$BACKGROUND_FILE"; then
   test -d "$MOUNT_DIR/.background" || mkdir "$MOUNT_DIR/.background"
   cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
-exit
+
 if ! test -z "$APPLICATION_LINK"; then
   echo "making link to Applications dir"
   echo $MOUNT_DIR
