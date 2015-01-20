@@ -16,6 +16,7 @@ on run (volumeName)
 				set current view to icon view
 				set toolbar visible to false
 				set statusbar visible to false
+				set position of every item to {theBottomRightX + 100, 100}
 				set the bounds to {theXOrigin, theYOrigin, theBottomRightX, theBottomRightY}
 				set statusbar visible to false
 			end tell
