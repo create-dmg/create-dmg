@@ -73,4 +73,5 @@ Alternatives
 ------------
 
 * [node-appdmg](https://github.com/LinusU/node-appdmg)
+* [dmgbuild](https://pypi.python.org/pypi/dmgbuild)
 * see the [StackOverflow question](http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools)
