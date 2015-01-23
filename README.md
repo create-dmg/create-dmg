@@ -2,6 +2,16 @@ yoursway-create-dmg
 ===================
 
 A shell script to build fancy DMGs.  
+
+
+Status and contribution policy
+------------------------------
+
+This project is maintained thanks to the contributors who send pull requests. The original author has no use for the project, so his only role is reviewing and merging pull requests.
+
+I will merge any pull request that adds something useful and does not break existing things.
+
+Starting in January 2015, everyone who gets a pull request merged gets commit access to the repository.
   
   
 **INSTALLATION**
