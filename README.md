@@ -67,3 +67,10 @@ Example
 > --app-drop-link 600 185 \  
 > Application-Installer.dmg \  
 > source\_folder/  
+
+
+Alternatives
+------------
+
+* [node-appdmg](https://github.com/LinusU/node-appdmg)
+* see the [StackOverflow question](http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools)
