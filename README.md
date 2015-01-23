@@ -14,7 +14,8 @@ I will merge any pull request that adds something useful and does not break exis
 Starting in January 2015, everyone who gets a pull request merged gets commit access to the repository.
   
   
-**INSTALLATION**
+Installation
+------------
   
 By being a shell script, yoursway-create-dmg installation is very simple. Simply download and run.  
   
@@ -23,7 +24,8 @@ By being a shell script, yoursway-create-dmg installation is very simple. Simply
 > ./create-dmg [options]  
   
   
-**USAGE**
+Usage
+-----
   
 > create-dmg [options...] [output\_name.dmg] [source\_folder]  
 
@@ -48,7 +50,8 @@ All contents of source\_folder will be copied into the disk image.
 *   **-h, --help:** display the help  
   
   
-**EXAMPLE**
+Example
+-------
   
 > \#!/bin/sh  
 > test -f Application-Installer.dmg && rm Application-Installer.dmg  
