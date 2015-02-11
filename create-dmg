@@ -87,7 +87,8 @@ while test "${1:0:1}" = "-"; do
 "
       shift; shift; shift; shift;;
     --hide-extension)
-      HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true"
+      HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
+"
       shift; shift;;
     --custom-icon)
       shift; shift; shift; shift; shift;;
