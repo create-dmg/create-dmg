@@ -44,6 +44,8 @@ function usage() {
   echo "      attach a license file to the dmg"
   echo "  --no-internet-enable"
   echo "      disable automatic mount&copy"
+  echo "  --format"
+  echo "      specify the final image format (default is UDZO)"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -55,6 +57,8 @@ WINW=500
 WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
+FORMAT="UDZO"
+IMAGEKEY=""
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -109,9 +113,18 @@ while test "${1:0:1}" = "-"; do
     --no-internet-enable)
       NOINTERNET=1
       shift;;
+    --format)
+      FORMAT="$2"
+      shift; shift;;
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
+  esac
+  case $FORMAT in
+    UDZO)
+      IMAGEKEY="-imagekey zlib-level=9";;
+    UDBZ)
+      IMAGEKEY="-imagekey bzip2-level=9";;
   esac
 done
 
@@ -211,7 +224,7 @@ hdiutil detach "${DEV_NAME}"
 
 # compress image
 echo "Compressing disk image..."
-hdiutil convert "${DMG_TEMP_NAME}" -format UDZO -imagekey zlib-level=9 -o "${DMG_DIR}/${DMG_NAME}"
+hdiutil convert "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
