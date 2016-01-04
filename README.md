@@ -46,6 +46,8 @@ All contents of source\_folder will be copied into the disk image.
 *   **--app-drop-link [x y]:** make a drop link to Applications, at location x, y    
 *   **--eula [eula file]:** attach a license file to the dmg    
 *   **--no-internet-enable:** disable automatic mount&copy    
+*   **--add-file [target name] [path to source file] [x y]:** add additional file (option can be used multiple times)    
+*   **--disk-image-size [x]:** set the disk image size manually to x MB    
 *   **--version:** show tool version number    
 *   **-h, --help:** display the help  
   
