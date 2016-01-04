@@ -160,7 +160,7 @@ fi
 # Create the image
 echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
-if ! test -z "$DISK_IMAGE_SIZE"; then
+if test -z "$DISK_IMAGE_SIZE"; then
   ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
   DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
 fi
