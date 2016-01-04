@@ -44,6 +44,8 @@ function usage() {
   echo "      attach a license file to the dmg"
   echo "  --no-internet-enable"
   echo "      disable automatic mount&copy"
+  echo "  --add-file target_name path_to_source_file x y"
+  echo "      add additional file (option can be used multiple times)"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -55,6 +57,8 @@ WINW=500
 WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
+ADD_FILE_SOURCES=()
+ADD_FILE_TARGETS=()
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -106,6 +110,13 @@ while test "${1:0:1}" = "-"; do
     --eula)
       EULA_RSRC=$2
       shift; shift;;
+    --add-file)
+      ADD_FILE_TARGETS+=("$2")
+      ADD_FILE_SOURCES+=("$3")
+      POSITION_CLAUSE="${POSITION_CLAUSE}
+      set position of item \"$2\" to {$4, $5}
+"
+      shift; shift; shift; shift; shift;;
     --no-internet-enable)
       NOINTERNET=1
       shift;;
@@ -177,6 +188,15 @@ if ! test -z "$VOLUME_ICON_FILE"; then
   echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
   cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
   SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
+fi
+
+if ! test -z "$ADD_FILE_SOURCES"; then
+  echo "Copying custom files..."
+  for i in "${!ADD_FILE_SOURCES[@]}"
+  do
+    echo "${ADD_FILE_SOURCES[$i]}"
+    cp "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
+  done
 fi
 
 # run applescript
