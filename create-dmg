@@ -5,7 +5,7 @@
 set -e;
 
 function pure_version() {
-  echo '1.0.0.2'
+  echo '1.0.0.4'
 }
 
 function version() {
@@ -15,7 +15,7 @@ function version() {
 function usage() {
   version
   echo "Creates a fancy DMG file."
-  echo "Usage:  $(basename $0) options... image.dmg source_folder"
+  echo "Usage:  $(basename $0) <options> <output_name.dmg> [source_folder]"
   echo "All contents of source_folder will be copied into the disk image."
   echo "Options:"
   echo "  --volname name"
@@ -46,6 +46,8 @@ function usage() {
   echo "      disable automatic mount&copy"
   echo "  --add-file target_name path_to_source_file x y"
   echo "      add additional file (option can be used multiple times)"
+  echo "  --add-folder target_name path_to_source_folder x y"
+  echo "      add additional folder (option can be used multiple times)"
   echo "  --disk-image-size x"
   echo "      set the disk image size manually to x MB"
   echo "  --version         show tool version number"
@@ -61,6 +63,8 @@ ICON_SIZE=128
 TEXT_SIZE=16
 ADD_FILE_SOURCES=()
 ADD_FILE_TARGETS=()
+ADD_FOLDER_SOURCES=()
+ADD_FOLDER_TARGETS=()
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -118,6 +122,13 @@ while test "${1:0:1}" = "-"; do
     --add-file)
       ADD_FILE_TARGETS+=("$2")
       ADD_FILE_SOURCES+=("$3")
+      POSITION_CLAUSE="${POSITION_CLAUSE}
+      set position of item \"$2\" to {$4, $5}
+"
+      shift; shift; shift; shift; shift;;
+    --add-folder)
+      ADD_FOLDER_SOURCES+=("$3")
+      ADD_FOLDER_SOURCES+=("$3")
       POSITION_CLAUSE="${POSITION_CLAUSE}
       set position of item \"$2\" to {$4, $5}
 "
@@ -203,6 +214,15 @@ if ! test -z "$ADD_FILE_SOURCES"; then
   do
     echo "${ADD_FILE_SOURCES[$i]}"
     cp "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
+  done
+fi
+
+if ! test -z "$ADD_FOLDER_SOURCES"; then
+  echo "Copying custom folder..."
+  for i in "${!ADD_FOLDER_SOURCES[@]}"
+  do
+    echo "${ADD_FOLDER_SOURCES[$i]}"
+    cp -r "${ADD_FOLDER_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FOLDER_TARGETS[$i]}"
   done
 fi
 
