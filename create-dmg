@@ -142,7 +142,7 @@ while test "${1:0:1}" = "-"; do
   esac
 done
 
-test -z "$2" && {
+test -z "$1" && {
   echo "Not enough arguments. Invoke with --help for help."
   exit 1
 }
