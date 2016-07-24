@@ -176,6 +176,21 @@ if test -z "$DISK_IMAGE_SIZE"; then
   ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
   DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
 fi
+if ! test -z "$ADD_FILE_SOURCES"; then
+  for i in "${!ADD_FILE_SOURCES[@]}"
+  do
+    ACTUAL_SIZE=`du -sm "${ADD_FILE_SOURCES[$i]}" | sed -e 's/	.*//g'`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+  done
+fi
+if ! test -z "$ADD_FOLDER_SOURCES"; then
+  for i in "${!ADD_FOLDER_SOURCES[@]}"
+  do
+    echo "${ADD_FOLDER_SOURCES[$i]}"
+    ACTUAL_SIZE=`du -sm "${ADD_FOLDER_SOURCES[$i]}" | sed -e 's/	.*//g'`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+  done
+fi
 hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
