@@ -127,7 +127,7 @@ while test "${1:0:1}" = "-"; do
 "
       shift; shift; shift; shift; shift;;
     --add-folder)
-      ADD_FOLDER_SOURCES+=("$3")
+      ADD_FOLDER_TARGETS+=("$2")
       ADD_FOLDER_SOURCES+=("$3")
       POSITION_CLAUSE="${POSITION_CLAUSE}
       set position of item \"$2\" to {$4, $5}
@@ -186,7 +186,6 @@ fi
 if ! test -z "$ADD_FOLDER_SOURCES"; then
   for i in "${!ADD_FOLDER_SOURCES[@]}"
   do
-    echo "${ADD_FOLDER_SOURCES[$i]}"
     ACTUAL_SIZE=`du -sm "${ADD_FOLDER_SOURCES[$i]}" | sed -e 's/	.*//g'`
     DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
   done
@@ -234,7 +233,7 @@ if ! test -z "$ADD_FILE_SOURCES"; then
 fi
 
 if ! test -z "$ADD_FOLDER_SOURCES"; then
-  echo "Copying custom folder..."
+  echo "Copying custom folders..."
   for i in "${!ADD_FOLDER_SOURCES[@]}"
   do
     echo "${ADD_FOLDER_SOURCES[$i]}"
