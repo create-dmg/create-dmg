@@ -22,6 +22,8 @@ function usage() {
   echo "      set volume name (displayed in the Finder sidebar and window title)"
   echo "  --volicon icon.icns"
   echo "      set volume icon"
+  echo "  --mountpoint path"
+  echo "      set full path to mountpoint, if you not want to use /Volumes, e.g. /tmp/build-123"
   echo "  --background pic.png"
   echo "      set folder background image (provide png, gif, jpg)"
   echo "  --window-pos x y"
@@ -63,6 +65,9 @@ while test "${1:0:1}" = "-"; do
       shift; shift;;
     --volicon)
       VOLUME_ICON_FILE="$2"
+      shift; shift;;
+    --mountpoint)
+      MOUNT_POINT="$2"
       shift; shift;;
     --background)
       BACKGROUND_FILE="$2"
@@ -150,15 +155,22 @@ hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsar
 
 # mount it
 echo "Mounting disk image..."
-MOUNT_DIR="/Volumes/${VOLUME_NAME}"
+if [ -z "${MOUNT_POINT}" ]; then
+  MOUNT_DIR="/Volumes/${VOLUME_NAME}"
+  ATTACH_OPT=""
+else
+  MOUNT_DIR="${MOUNT_POINT}"
+  test -d "${MOUNT_DIR}" || mkdir -p "${MOUNT_DIR}"
+  ATTACH_OPT="-mountpoint ${MOUNT_DIR}"
+fi
 
 # try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
 DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
-test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
+test -d "${MOUNT_DIR}" && test -z "${DEV_NAME}" || hdiutil detach "${DEV_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
-DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach ${ATTACH_OPT} -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 
 if ! test -z "$BACKGROUND_FILE"; then
