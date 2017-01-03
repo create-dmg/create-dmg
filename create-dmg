@@ -217,7 +217,8 @@ rm -f "${DMG_TEMP_NAME}"
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
         echo "adding EULA resources"
-        "${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+        REZ_PATH=$(xcrun --find Rez)
+        "${AUX_PATH}/dmg-license.py" --rez "$REZ_PATH" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
 fi
 
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
