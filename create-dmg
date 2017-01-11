@@ -1,8 +1,8 @@
-#! /bin/bash
+#!/bin/bash
 
 # Create a read-only disk image of the contents of a folder
 
-set -e;
+set -e
 
 function pure_version() {
   echo '1.0.0.2'
@@ -137,8 +137,8 @@ test -d "$AUX_PATH" || {
 }
 
 if [ -f "$SRC_FOLDER/.DS_Store" ]; then
-    echo "Deleting any .DS_Store in source folder"
-    rm "$SRC_FOLDER/.DS_Store"
+  echo "Deleting any .DS_Store in source folder"
+  rm "$SRC_FOLDER/.DS_Store"
 fi
 
 # Create the image
@@ -183,9 +183,13 @@ fi
 APPLESCRIPT=$(mktemp -t createdmg)
 cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 
-echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
-"/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
-echo "Done running the applescript..."
+echo "Running AppleScript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
+(/usr/bin/osascript "${APPLESCRIPT}" "${VOLUME_NAME}" && exit 0)
+if [[ "$?" -ne 0 ]]; then
+  echo "Failed running AppleScript"
+  exit 1
+fi
+echo "Done running the AppleScript..."
 sleep 4
 
 rm "$APPLESCRIPT"
@@ -201,8 +205,8 @@ bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
 echo "Blessing finished"
 
 if ! test -z "$VOLUME_ICON_FILE"; then
-   # tell the volume that it has a special file attribute
-   SetFile -a C "$MOUNT_DIR"
+  # tell the volume that it has a special file attribute
+  SetFile -a C "$MOUNT_DIR"
 fi
 
 # unmount
@@ -216,14 +220,14 @@ rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
-        echo "adding EULA resources"
-        "${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+  echo "adding EULA resources"
+  "${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
 fi
 
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
-        echo "not setting 'internet-enable' on the dmg"
+  echo "not setting 'internet-enable' on the dmg"
 else
-        hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
+  hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
 fi
 
 echo "Disk image done"
