@@ -60,38 +60,38 @@ while test "${1:0:1}" = "-"; do
   case $1 in
     --volname)
       VOLUME_NAME="$2"
-      shift; shift;;
+      shift 2;;
     --volicon)
       VOLUME_ICON_FILE="$2"
-      shift; shift;;
+      shift 2;;
     --background)
       BACKGROUND_FILE="$2"
       BACKGROUND_FILE_NAME="$(basename $BACKGROUND_FILE)"
       BACKGROUND_CLAUSE="set background picture of opts to file \".background:$BACKGROUND_FILE_NAME\""
       REPOSITION_HIDDEN_FILES_CLAUSE="set position of every item to {theBottomRightX + 100, 100}"
-      shift; shift;;
+      shift 2;;
     --icon-size)
       ICON_SIZE="$2"
-      shift; shift;;
+      shift 2;;
     --text-size)
       TEXT_SIZE="$2"
-      shift; shift;;
+      shift 2;;
     --window-pos)
       WINX=$2; WINY=$3
-      shift; shift; shift;;
+      shift 3;;
     --window-size)
       WINW=$2; WINH=$3
-      shift; shift; shift;;
+      shift 3;;
     --icon)
       POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
 "
-      shift; shift; shift; shift;;
+      shift 4;;
     --hide-extension)
       HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
 "
-      shift; shift;;
+      shift 3;;
     --custom-icon)
-      shift; shift; shift; shift; shift;;
+      shift 5;;
     -h | --help)
       usage;;
     --version)
@@ -102,10 +102,10 @@ while test "${1:0:1}" = "-"; do
       APPLICATION_LINK=$2
       APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
 "
-      shift; shift; shift;;
+      shift 3;;
     --eula)
       EULA_RSRC=$2
-      shift; shift;;
+      shift 2;;
     --no-internet-enable)
       NOINTERNET=1
       shift;;
