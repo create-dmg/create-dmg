@@ -19,8 +19,8 @@ Installation
   
 By being a shell script, yoursway-create-dmg installation is very simple. Simply download and run.  
   
-> git clone https://github.com/andreyvit/yoursway-create-dmg.git  
-> cd yoursway-create-dmg  
+> git clone https://github.com/andreyvit/create-dmg.git  
+> cd create-dmg  
 > ./create-dmg [options]  
   
   
