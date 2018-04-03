@@ -8,6 +8,7 @@ on run (volumeName)
 					open
 					retry = false
 				on error number -1712 -- Apple event timed out
+					delay 1
 					retry = true
 					set retries to retries + 1
 				end try
@@ -57,6 +58,7 @@ on run (volumeName)
 					open
 					retry = false
 				on error number -1712 -- Apple event timed out
+					delay 1
 					retry = true
 					set retries to retries + 1
 				end try
