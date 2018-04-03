@@ -1,9 +1,9 @@
 on run (volumeName)
 	tell application "Finder"
 		tell disk (volumeName as string)
-			set retry to false
+			set retry to true
 			set retries to 0
-			repeat while retry = true and retries < 5
+			repeat while (retry = true) and (retries < 5)
 				try
 					open
 					retry = false
@@ -51,9 +51,9 @@ on run (volumeName)
 
 			close
 
-			set retry to false
+			set retry to true
 			set retries to 0
-			repeat while retry = true and retries < 5
+			repeat while (retry = true) and (retries < 5)
 				try
 					open
 					retry = false
