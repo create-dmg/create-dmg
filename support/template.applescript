@@ -1,8 +1,19 @@
 on run (volumeName)
 	tell application "Finder"
 		tell disk (volumeName as string)
-			open
-			
+			set retry to true
+			set retries to 0
+			repeat while (retry = true) and (retries < 5)
+				try
+					open
+					retry = false
+				on error number -1712 -- Apple event timed out
+					delay 1
+					retry = true
+					set retries to retries + 1
+				end try
+			end repeat
+
 			set theXOrigin to WINX
 			set theYOrigin to WINY
 			set theWidth to WINW
@@ -37,8 +48,21 @@ on run (volumeName)
 			
 			-- Application Link Clause
 			APPLICATION_CLAUSE
-            close
-            open
+
+			close
+
+			set retry to true
+			set retries to 0
+			repeat while (retry = true) and (retries < 5)
+				try
+					open
+					retry = false
+				on error number -1712 -- Apple event timed out
+					delay 1
+					retry = true
+					set retries to retries + 1
+				end try
+			end repeat
 			
 			update without registering applications
 			-- Force saving of the size
