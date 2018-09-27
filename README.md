@@ -9,9 +9,7 @@ Status and contribution policy
 
 This project is maintained thanks to the contributors who send pull requests. The original author has no use for the project, so his only role is reviewing and merging pull requests.
 
-I will merge any pull request that adds something useful and does not break existing things.
-
-Starting in January 2015, everyone who gets a pull request merged gets commit access to the repository.
+I will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository. I'm also looking for a new maintainer. If you're interested in becoming one, or just want to chat, please let me know in https://gitter.im/create-dmg/Lobby.
   
   
 Installation
