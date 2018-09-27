@@ -7,11 +7,11 @@ A shell script to build fancy DMGs.
 Status and contribution policy
 ------------------------------
 
-This project is maintained thanks to the contributors who send pull requests. The original author has no use for the project, so his only role is reviewing and merging pull requests.
+This project is maintained thanks to the contributors who send pull requests, and now (Sep 2018) with the help of [@aonez](https://github.com/aonez).
 
-I will merge any pull request that adds something useful and does not break existing things.
+We will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository.
 
-Starting in January 2015, everyone who gets a pull request merged gets commit access to the repository.
+If you're an active user and want to be a maintainer, or just want to chat, please ping us at https://gitter.im/create-dmg/Lobby.
   
   
 Installation
@@ -19,8 +19,8 @@ Installation
   
 By being a shell script, yoursway-create-dmg installation is very simple. Simply download and run.  
   
-> git clone https://github.com/andreyvit/yoursway-create-dmg.git  
-> cd yoursway-create-dmg  
+> git clone https://github.com/andreyvit/create-dmg.git  
+> cd create-dmg  
 > ./create-dmg [options]  
   
   

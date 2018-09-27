@@ -44,6 +44,8 @@ function usage() {
   echo "      attach a license file to the dmg"
   echo "  --no-internet-enable"
   echo "      disable automatic mount&copy"
+  echo "  --format"
+  echo "      specify the final image format (default is UDZO)"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -55,6 +57,8 @@ WINW=500
 WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
+FORMAT="UDZO"
+IMAGEKEY=""
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -109,9 +113,18 @@ while test "${1:0:1}" = "-"; do
     --no-internet-enable)
       NOINTERNET=1
       shift;;
+    --format)
+      FORMAT="$2"
+      shift; shift;;
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
+  esac
+  case $FORMAT in
+    UDZO)
+      IMAGEKEY="-imagekey zlib-level=9";;
+    UDBZ)
+      IMAGEKEY="-imagekey bzip2-level=9";;
   esac
 done
 
@@ -146,8 +159,8 @@ echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
 ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
 DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
-hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW "${DMG_TEMP_NAME}"
-hdiutil resize -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW "${DMG_TEMP_NAME}"
+hdiutil resize -verbose -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
 echo "Mounting disk image..."
@@ -155,11 +168,11 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 
 # try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
-DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil info | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
-DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 
 if ! test -z "$BACKGROUND_FILE"; then
@@ -183,7 +196,7 @@ fi
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg)
 cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
-
+sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
 echo "Done running the applescript..."
@@ -212,7 +225,7 @@ hdiutil detach "${DEV_NAME}"
 
 # compress image
 echo "Compressing disk image..."
-hdiutil convert "${DMG_TEMP_NAME}" -format UDZO -imagekey zlib-level=9 -o "${DMG_DIR}/${DMG_NAME}"
+hdiutil convert "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
