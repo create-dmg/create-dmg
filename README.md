@@ -7,9 +7,11 @@ A shell script to build fancy DMGs.
 Status and contribution policy
 ------------------------------
 
-This project is maintained thanks to the contributors who send pull requests. The original author has no use for the project, so his only role is reviewing and merging pull requests.
+This project is maintained thanks to the contributors who send pull requests, and now (Sep 2018) with the help of @aONe.
 
-I will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository. I'm also looking for a new maintainer. If you're interested in becoming one, or just want to chat, please let me know in https://gitter.im/create-dmg/Lobby.
+We will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository.
+
+If you're an active user and want to be a maintainer, or just want to chat, please ping us at https://gitter.im/create-dmg/Lobby.
   
   
 Installation
