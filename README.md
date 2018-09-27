@@ -7,7 +7,7 @@ A shell script to build fancy DMGs.
 Status and contribution policy
 ------------------------------
 
-This project is maintained thanks to the contributors who send pull requests, and now (Sep 2018) with the help of @aonez.
+This project is maintained thanks to the contributors who send pull requests, and now (Sep 2018) with the help of [@aonez](https://github.com/aonez).
 
 We will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository.
 
