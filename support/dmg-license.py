@@ -94,7 +94,7 @@ data 'STR#' (5002, "English") {
                 kind = 'RTF ' if license.lower().endswith('.rtf') else 'TEXT'
                 f.write('data \'%s\' (5000, "English") {\n' % kind)
                 def escape(s):
-                    return s.strip().replace('\\', '\\\\').replace('"', '\\"')
+                    return s.strip().replace('\\', '\\\\').replace('"', '\\"').replace('\0', '')
 
                 for line in l:
                     if len(line) < 1000:
