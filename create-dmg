@@ -185,25 +185,51 @@ fi
 # Create the image
 echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
-if test -z "$DISK_IMAGE_SIZE"; then
-  ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
-  DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
+
+# Using Megabytes since hdiutil fails with very large Byte numbers
+function blocks_to_megabytes() {
+	# Add 1 extra MB, since there's no decimal retention here
+	MB_SIZE=$((($1 * 512 / 1000 / 1000) + 1))
+	echo $MB_SIZE
+}
+
+function get_size() {
+	# Get block size in disk
+	bytes_size=`du -s "$1" | sed -e 's/	.*//g'`
+	echo `blocks_to_megabytes $bytes_size`
+}
+
+# Create the DMG with the specified size or the hdiutil estimation
+CUSTOM_SIZE=''
+if ! test -z "$DISK_IMAGE_SIZE"; then
+  CUSTOM_SIZE="-size ${DISK_IMAGE_SIZE}m"
 fi
+hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+
+# Get the created DMG actual size
+DISK_IMAGE_SIZE=`get_size "${DMG_TEMP_NAME}"`
+
+# Estimate the additional soruces size
 if ! test -z "$ADD_FILE_SOURCES"; then
   for i in "${!ADD_FILE_SOURCES[@]}"
   do
-    ACTUAL_SIZE=`du -sm "${ADD_FILE_SOURCES[$i]}" | sed -e 's/	.*//g'`
-    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+    SOURCE_SIZE=`get_size "${ADD_FILE_SOURCES[$i]}"`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
   done
 fi
 if ! test -z "$ADD_FOLDER_SOURCES"; then
   for i in "${!ADD_FOLDER_SOURCES[@]}"
   do
-    ACTUAL_SIZE=`du -sm "${ADD_FOLDER_SOURCES[$i]}" | sed -e 's/	.*//g'`
-    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+    SOURCE_SIZE=`get_size "${ADD_FOLDER_SOURCES[$i]}"`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
   done
 fi
-hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+
+# Add extra space for additional resources
+DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
+
+# Resize the image for the extra stuff
+hdiutil resize -verbose -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
 echo "Mounting disk image..."
