@@ -17,8 +17,8 @@ If you're an active user and want to be a maintainer, or just want to chat, plea
 Installation
 ------------
   
-By being a shell script, yoursway-create-dmg installation is very simple. Simply download and run.  
-  
+By being a shell script, create-dmg installation is very simple. Simply download and run.  
+
 > git clone https://github.com/andreyvit/create-dmg.git  
 > cd create-dmg  
 > ./create-dmg [options]  
@@ -46,6 +46,9 @@ All contents of source\_folder will be copied into the disk image.
 *   **--app-drop-link [x y]:** make a drop link to Applications, at location x, y    
 *   **--eula [eula file]:** attach a license file to the dmg    
 *   **--no-internet-enable:** disable automatic mount&copy    
+*   **--add-file [target name] [path to source file] [x y]:** add additional file (option can be used multiple times)    
+*   **--add-folder [target name] [path to source folder] [x y]:** add additional folder (option can be used multiple times)    
+*   **--disk-image-size [x]:** set the disk image size manually to x MB    
 *   **--version:** show tool version number    
 *   **-h, --help:** display the help  
   

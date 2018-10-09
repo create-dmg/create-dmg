@@ -15,7 +15,7 @@ function version() {
 function usage() {
   version
   echo "Creates a fancy DMG file."
-  echo "Usage:  $(basename $0) options... image.dmg source_folder"
+  echo "Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>"
   echo "All contents of source_folder will be copied into the disk image."
   echo "Options:"
   echo "  --volname name"
@@ -46,6 +46,12 @@ function usage() {
   echo "      disable automatic mount&copy"
   echo "  --format"
   echo "      specify the final image format (default is UDZO)"
+  echo "  --add-file target_name path_to_source_file x y"
+  echo "      add additional file (option can be used multiple times)"
+  echo "  --add-folder target_name path_to_source_folder x y"
+  echo "      add additional folder (option can be used multiple times)"
+  echo "  --disk-image-size x"
+  echo "      set the disk image size manually to x MB"
   echo "  --version         show tool version number"
   echo "  -h, --help        display this help"
   exit 0
@@ -58,6 +64,10 @@ WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
 FORMAT="UDZO"
+ADD_FILE_SOURCES=()
+ADD_FILE_TARGETS=()
+ADD_FOLDER_SOURCES=()
+ADD_FOLDER_TARGETS=()
 IMAGEKEY=""
 
 while test "${1:0:1}" = "-"; do
@@ -116,6 +126,23 @@ while test "${1:0:1}" = "-"; do
     --format)
       FORMAT="$2"
       shift; shift;;
+    --add-file)
+      ADD_FILE_TARGETS+=("$2")
+      ADD_FILE_SOURCES+=("$3")
+      POSITION_CLAUSE="${POSITION_CLAUSE}
+      set position of item \"$2\" to {$4, $5}
+"
+      shift; shift; shift; shift; shift;;
+    --add-folder)
+      ADD_FOLDER_TARGETS+=("$2")
+      ADD_FOLDER_SOURCES+=("$3")
+      POSITION_CLAUSE="${POSITION_CLAUSE}
+      set position of item \"$2\" to {$4, $5}
+"
+      shift; shift; shift; shift; shift;;
+    --disk-image-size)
+      DISK_IMAGE_SIZE="$2"
+      shift; shift;;
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
@@ -140,6 +167,7 @@ DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
 DMG_TEMP_NAME="$DMG_DIR/rw.${DMG_NAME}"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
+
 test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 
 AUX_PATH="$SCRIPT_DIR/support"
@@ -157,8 +185,24 @@ fi
 # Create the image
 echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
-ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
-DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
+if test -z "$DISK_IMAGE_SIZE"; then
+  ACTUAL_SIZE=`du -sm "$SRC_FOLDER" | sed -e 's/	.*//g'`
+  DISK_IMAGE_SIZE=$(expr $ACTUAL_SIZE + 20)
+fi
+if ! test -z "$ADD_FILE_SOURCES"; then
+  for i in "${!ADD_FILE_SOURCES[@]}"
+  do
+    ACTUAL_SIZE=`du -sm "${ADD_FILE_SOURCES[$i]}" | sed -e 's/	.*//g'`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+  done
+fi
+if ! test -z "$ADD_FOLDER_SOURCES"; then
+  for i in "${!ADD_FOLDER_SOURCES[@]}"
+  do
+    ACTUAL_SIZE=`du -sm "${ADD_FOLDER_SOURCES[$i]}" | sed -e 's/	.*//g'`
+    DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
+  done
+fi
 hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
@@ -192,8 +236,26 @@ if ! test -z "$VOLUME_ICON_FILE"; then
   SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
 fi
 
+if ! test -z "$ADD_FILE_SOURCES"; then
+  echo "Copying custom files..."
+  for i in "${!ADD_FILE_SOURCES[@]}"
+  do
+    echo "${ADD_FILE_SOURCES[$i]}"
+    cp "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
+  done
+fi
+
+if ! test -z "$ADD_FOLDER_SOURCES"; then
+  echo "Copying custom folders..."
+  for i in "${!ADD_FOLDER_SOURCES[@]}"
+  do
+    echo "${ADD_FOLDER_SOURCES[$i]}"
+    cp -r "${ADD_FOLDER_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FOLDER_TARGETS[$i]}"
+  done
+fi
+
 # run applescript
-APPLESCRIPT=$(mktemp -t createdmg)
+APPLESCRIPT=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
