@@ -97,11 +97,10 @@ data 'STR#' (5002, "English") {
                     return s.strip().replace('\\', '\\\\').replace('"', '\\"').replace('\0', '')
 
                 for line in l:
-                    if len(line) < 1000:
-                        f.write('    "' + escape(line) + '\\n"\n')
-                    else:
-                        for liner in line.split('.'):
-                            f.write('    "' + escape(liner) + '. \\n"\n')
+                    line = escape(line)
+                    for liner in [line[i:i+1000] for i in range(0, len(line), 1000)]:
+                        f.write('    "' + liner + '"\n')
+                    f.write('    "' + '\\n"\n')
                 f.write('};\n\n')
             f.write("""data 'styl' (5000, "English") {
         $"0003 0000 0000 000C 0009 0014 0000 0000"
