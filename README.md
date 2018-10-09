@@ -17,17 +17,20 @@ If you're an active user and want to be a maintainer, or just want to chat, plea
 Installation
 ------------
   
-By being a shell script, create-dmg installation is very simple. Simply download and run.  
+By being a shell script, create-dmg installation is very simple. Simply download and run.
 
-> git clone https://github.com/andreyvit/create-dmg.git  
-> cd create-dmg  
-> ./create-dmg [options]  
-  
+```sh
+git clone https://github.com/andreyvit/create-dmg.git  
+cd create-dmg  
+./create-dmg [options]  
+```
   
 Usage
 -----
-  
-> create-dmg [options...] [output\_name.dmg] [source\_folder]  
+ 
+```sh
+create-dmg [options...] [output\_name.dmg] [source\_folder]  
+```
 
 All contents of source\_folder will be copied into the disk image.  
   
@@ -55,22 +58,23 @@ All contents of source\_folder will be copied into the disk image.
   
 Example
 -------
-  
-> \#!/bin/sh  
-> test -f Application-Installer.dmg && rm Application-Installer.dmg  
-> create-dmg \  
-> --volname "Application Installer" \  
-> --volicon "application\_icon.icns" \  
-> --background "installer\_background.png" \  
-> --window-pos 200 120 \  
-> --window-size 800 400 \  
-> --icon-size 100 \  
-> --icon Application.app 200 190 \  
-> --hide-extension Application.app \  
-> --app-drop-link 600 185 \  
-> Application-Installer.dmg \  
-> source\_folder/  
 
+```sh
+#!/bin/sh  
+test -f Application-Installer.dmg && rm Application-Installer.dmg  
+create-dmg \  
+--volname "Application Installer" \  
+--volicon "application\_icon.icns" \  
+--background "installer\_background.png" \  
+--window-pos 200 120 \  
+--window-size 800 400 \  
+--icon-size 100 \  
+--icon Application.app 200 190 \  
+--hide-extension Application.app \  
+--app-drop-link 600 185 \  
+Application-Installer.dmg \  
+source\_folder/  
+```
 
 Alternatives
 ------------
