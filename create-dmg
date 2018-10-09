@@ -69,6 +69,7 @@ ADD_FILE_TARGETS=()
 ADD_FOLDER_SOURCES=()
 ADD_FOLDER_TARGETS=()
 IMAGEKEY=""
+HDIUTIL_VERBOSITY=""
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -143,6 +144,12 @@ while test "${1:0:1}" = "-"; do
     --disk-image-size)
       DISK_IMAGE_SIZE="$2"
       shift; shift;;
+  	--hdiutil-verbose)
+      HDIUTIL_VERBOSITY='-verbose'
+      shift;;
+	--hdiutil-quiet)
+      HDIUTIL_VERBOSITY='-quiet'
+      shift;; 
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
@@ -204,7 +211,7 @@ CUSTOM_SIZE=''
 if ! test -z "$DISK_IMAGE_SIZE"; then
   CUSTOM_SIZE="-size ${DISK_IMAGE_SIZE}m"
 fi
-hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
 
 # Get the created DMG actual size
 DISK_IMAGE_SIZE=`get_size "${DMG_TEMP_NAME}"`
@@ -229,7 +236,7 @@ fi
 DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
 
 # Resize the image for the extra stuff
-hdiutil resize -verbose -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+hdiutil resize ${HDIUTIL_VERBOSITY} -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
 echo "Mounting disk image..."
@@ -312,7 +319,7 @@ hdiutil detach "${DEV_NAME}"
 
 # compress image
 echo "Compressing disk image..."
-hdiutil convert "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
+hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources

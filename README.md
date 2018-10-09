@@ -52,6 +52,8 @@ All contents of source\_folder will be copied into the disk image.
 *   **--add-file [target name] [path to source file] [x y]:** add additional file (option can be used multiple times)    
 *   **--add-folder [target name] [path to source folder] [x y]:** add additional folder (option can be used multiple times)    
 *   **--disk-image-size [x]:** set the disk image size manually to x MB    
+*   **--hdiutil-verbose:** execute hdiutil in verbose mode    
+*   **--hdiutil-quiet:** execute hdiutil in quiet mode 
 *   **--version:** show tool version number    
 *   **-h, --help:** display the help  
   
