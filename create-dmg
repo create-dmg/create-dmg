@@ -5,7 +5,7 @@
 set -e;
 
 function pure_version() {
-  echo '1.0.0.4'
+  echo '1.0.0.3'
 }
 
 function version() {
@@ -44,6 +44,8 @@ function usage() {
   echo "      attach a license file to the dmg"
   echo "  --no-internet-enable"
   echo "      disable automatic mount&copy"
+  echo "  --format"
+  echo "      specify the final image format (default is UDZO)"
   echo "  --add-file target_name path_to_source_file x y"
   echo "      add additional file (option can be used multiple times)"
   echo "  --add-folder target_name path_to_source_folder x y"
@@ -61,10 +63,12 @@ WINW=500
 WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
+FORMAT="UDZO"
 ADD_FILE_SOURCES=()
 ADD_FILE_TARGETS=()
 ADD_FOLDER_SOURCES=()
 ADD_FOLDER_TARGETS=()
+IMAGEKEY=""
 
 while test "${1:0:1}" = "-"; do
   case $1 in
@@ -119,6 +123,9 @@ while test "${1:0:1}" = "-"; do
     --no-internet-enable)
       NOINTERNET=1
       shift;;
+    --format)
+      FORMAT="$2"
+      shift; shift;;
     --add-file)
       ADD_FILE_TARGETS+=("$2")
       ADD_FILE_SOURCES+=("$3")
@@ -139,6 +146,12 @@ while test "${1:0:1}" = "-"; do
     -*)
       echo "Unknown option $1. Run with --help for help."
       exit 1;;
+  esac
+  case $FORMAT in
+    UDZO)
+      IMAGEKEY="-imagekey zlib-level=9";;
+    UDBZ)
+      IMAGEKEY="-imagekey bzip2-level=9";;
   esac
 done
 
@@ -190,7 +203,7 @@ if ! test -z "$ADD_FOLDER_SOURCES"; then
     DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $ACTUAL_SIZE + 20)
   done
 fi
-hdiutil create -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
+hdiutil create -verbose -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # mount it
 echo "Mounting disk image..."
@@ -198,11 +211,11 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 
 # try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
-DEV_NAME=$(hdiutil info | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil info | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
 
 echo "Mount directory: $MOUNT_DIR"
-DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 
 if ! test -z "$BACKGROUND_FILE"; then
@@ -244,7 +257,7 @@ fi
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
-
+sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
 echo "Done running the applescript..."
@@ -273,7 +286,7 @@ hdiutil detach "${DEV_NAME}"
 
 # compress image
 echo "Compressing disk image..."
-hdiutil convert "${DMG_TEMP_NAME}" -format UDZO -imagekey zlib-level=9 -o "${DMG_DIR}/${DMG_NAME}"
+hdiutil convert "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
