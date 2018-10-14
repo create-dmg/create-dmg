@@ -180,8 +180,13 @@ test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 AUX_PATH="$SCRIPT_DIR/support"
 
 test -d "$AUX_PATH" || {
-  echo "Cannot find support directory: $AUX_PATH"
-  exit 1
+	BREW_AUX_PATH="$SCRIPT_DIR/../include"
+	if [ -d "${BREW_AUX_PATH}" ]; then
+		AUX_PATH="${BREW_AUX_PATH}"
+	else
+		echo "Cannot find support directory: $AUX_PATH"
+		exit 1
+	fi
 }
 
 if [ -f "$SRC_FOLDER/.DS_Store" ]; then
