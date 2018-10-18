@@ -63,20 +63,20 @@ Example
 -------
 
 ```sh
-#!/bin/sh  
-test -f Application-Installer.dmg && rm Application-Installer.dmg  
-create-dmg \  
---volname "Application Installer" \  
---volicon "application\_icon.icns" \  
---background "installer\_background.png" \  
---window-pos 200 120 \  
---window-size 800 400 \  
---icon-size 100 \  
---icon Application.app 200 190 \  
---hide-extension Application.app \  
---app-drop-link 600 185 \  
-Application-Installer.dmg \  
-source\_folder/  
+#!/bin/sh
+test -f Application-Installer.dmg && rm Application-Installer.dmg
+create-dmg \
+--volname "Application Installer" \
+--volicon "application\_icon.icns" \
+--background "installer\_background.png" \
+--window-pos 200 120 \
+--window-size 800 400 \
+--icon-size 100 \
+--icon "Application.app" 200 190 \
+--hide-extension "Application.app" \
+--app-drop-link 600 185 \
+"Application-Installer.dmg" \
+"source_folder/"
 ```
 
 Alternatives
