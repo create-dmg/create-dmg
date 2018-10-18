@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # Since create-dmg does not override, be sure to delete previous DMG
-test -f "Test.dmg" && rm "Test.dmg"
+test -f "output_name.dmg" && rm "output_name.dmg"
 
 # Create the DMG
 create-dmg/./create-dmg \
 --hdiutil-quiet \
---volname "Test" \
---volicon "Volume.icns" \
---background "Background.tiff" \
+--volname "test" \
+--volicon "volume.icns" \
+--background "background.tiff" \
 --window-pos 333 333 \
 --window-size 500 380 \
 --text-size 12 \
@@ -16,5 +16,5 @@ create-dmg/./create-dmg \
 --icon "Test.app" 150 180 \
 --hide-extension "Test.app" \
 --app-drop-link 350 180 \
-"Test.dmg" \
-"Test-Source/"
+"output_name.dmg" \
+"source_folder/"
