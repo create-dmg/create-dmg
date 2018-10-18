@@ -181,17 +181,17 @@ SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 
 test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 
+# brew formula will set this as 1 and embed the support scripts
+BREW_INSTALL=0
+
 AUX_PATH="$SCRIPT_DIR/support"
 
-test -d "$AUX_PATH" || {
-	BREW_AUX_PATH="$SCRIPT_DIR/../support"
-	if [ -d "${BREW_AUX_PATH}" ]; then
-		AUX_PATH="${BREW_AUX_PATH}"
-	else
+if [ $BREW_INSTALL -eq 0 ]; then
+	test -d "$AUX_PATH" || {
 		echo "Cannot find support directory: $AUX_PATH"
 		exit 1
-	fi
-}
+	}
+fi
 
 if [ -f "$SRC_FOLDER/.DS_Store" ]; then
     echo "Deleting any .DS_Store in source folder"
@@ -298,7 +298,18 @@ fi
 
 # run applescript
 APPLESCRIPT=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
-cat "$AUX_PATH/template.applescript" | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
+
+function applescript_source() {
+	if [ $BREW_INSTALL -eq 0 ]; then
+		cat "$AUX_PATH/template.applescript"
+	else
+		cat << 'EOS'
+		# BREW_INLINE_APPLESCRIPT_PLACEHOLDER
+EOS
+	fi
+}
+
+applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
@@ -333,8 +344,15 @@ rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
-        echo "adding EULA resources"
-        "${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+	echo "adding EULA resources"
+
+	if [ $BREW_INSTALL -eq 0 ]; then
+		"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+	else
+		python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" << 'EOS'
+		# BREW_INLINE_LICENSE_PLACEHOLDER
+EOS
+	fi
 fi
 
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
