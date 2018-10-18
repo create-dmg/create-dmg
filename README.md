@@ -17,12 +17,12 @@ If you're an active user and want to be a maintainer, or just want to chat, plea
 Installation
 ------------
   
-By being a shell script, create-dmg installation is very simple. Simply download and run.
+By being a shell script, create-dmg installation is very simple. Simply download the [latest release](https://github.com/andreyvit/create-dmg/releases/latest) and run.
+
+You can also clone the entire repository:
 
 ```sh
 git clone https://github.com/andreyvit/create-dmg.git  
-cd create-dmg  
-./create-dmg [options]  
 ```
   
 Usage
