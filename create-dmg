@@ -184,7 +184,7 @@ test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 AUX_PATH="$SCRIPT_DIR/support"
 
 test -d "$AUX_PATH" || {
-	BREW_AUX_PATH="$SCRIPT_DIR/../include"
+	BREW_AUX_PATH="$SCRIPT_DIR/../support"
 	if [ -d "${BREW_AUX_PATH}" ]; then
 		AUX_PATH="${BREW_AUX_PATH}"
 	else
