@@ -1,3 +1,20 @@
-#! /bin/bash
-test -f test2.dmg && rm test2.dmg
-./create-dmg --window-size 500 300 --background ~/Projects/eclipse-osx-repackager/build/background.gif --icon-size 96 --volname "Hyper Foo" --app-drop-link 380 205 --icon "Eclipse OS X Repackager" 110 205 test2.dmg /Users/andreyvit/Projects/eclipse-osx-repackager/temp/Eclipse\ OS\ X\ Repackager\ r10/
+#!/bin/bash
+
+# Since create-dmg does not override, be sure to delete previous DMG
+test -f "Test.dmg" && rm "Test.dmg"
+
+# Create the DMG
+create-dmg/./create-dmg \
+--hdiutil-quiet \
+--volname "Test" \
+--volicon "Volume.icns" \
+--background "Background.tiff" \
+--window-pos 333 333 \
+--window-size 500 380 \
+--text-size 12 \
+--icon-size 136 \
+--icon "Test.app" 150 180 \
+--hide-extension "Test.app" \
+--app-drop-link 350 180 \
+"Test.dmg" \
+"Test-Source/"
