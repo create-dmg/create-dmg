@@ -20,7 +20,7 @@ Installation
 By being a shell script, create-dmg installation is very simple. Simply download and run.
 
 ```sh
-git clone https://github.com/andreyvit/create-dmg.git  
+git clone https://github.com/andreyvit/create-dmg.git --depth 1
 cd create-dmg  
 ./create-dmg [options]  
 ```
