@@ -59,6 +59,7 @@ All contents of source\_folder will be copied into the disk image.
 *   **-h, --help:** display the help  
   
   
+*   **--sandbox-safe:** execute hdiutil with sandbox compatibility and don not bless
 Example
 -------
 

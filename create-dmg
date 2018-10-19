@@ -56,6 +56,8 @@ function usage() {
 	echo "      execute hdiutil in verbose mode"  
 	echo "  --hdiutil-quiet"
 	echo "      execute hdiutil in quiet mode"
+	echo "  --sandbox-safe"
+	echo "      execute hdiutil with sandbox compatibility and do not bless"
 	echo "  --version         show tool version number"
 	echo "  -h, --help        display this help"
 	exit 0
@@ -74,6 +76,7 @@ ADD_FOLDER_SOURCES=()
 ADD_FOLDER_TARGETS=()
 IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
+SANDBOX_SAFE=0
 
 while test "${1:0:1}" = "-"; do
 	case $1 in
@@ -154,6 +157,9 @@ while test "${1:0:1}" = "-"; do
 	--hdiutil-quiet)
 		HDIUTIL_VERBOSITY='-quiet'
 		shift;; 
+	--sandbox-safe)
+		SANDBOX_SAFE=1
+		shift;; 
 	-*)
 		echo "Unknown option $1. Run with --help for help."
 		exit 1;;
@@ -220,10 +226,22 @@ CUSTOM_SIZE=''
 if ! test -z "$DISK_IMAGE_SIZE"; then
 	CUSTOM_SIZE="-size ${DISK_IMAGE_SIZE}m"
 fi
-hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+
+if [ $SANDBOX_SAFE -eq 0 ]; then
+	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+else	
+	hdiutil makehybrid ${HDIUTIL_VERBOSITY} -default-volume-name "${VOLUME_NAME}" -hfs -o "${DMG_TEMP_NAME}" "$SRC_FOLDER"
+	hdiutil convert -format UDRW -ov -o "${DMG_TEMP_NAME}" "${DMG_TEMP_NAME}"
+	DISK_IMAGE_SIZE_CUSTOM=$DISK_IMAGE_SIZE
+fi
 
 # Get the created DMG actual size
 DISK_IMAGE_SIZE=`get_size "${DMG_TEMP_NAME}"`
+
+# Use the custom size if bigger
+if [ $SANDBOX_SAFE -eq 1 ] && [ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]; then
+	DISK_IMAGE_SIZE=$DISK_IMAGE_SIZE_CUSTOM
+fi
 
 # Estimate the additional soruces size
 if ! test -z "$ADD_FILE_SOURCES"; then
@@ -324,9 +342,13 @@ chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions."
 
 # make the top window open itself on mount:
-echo "Blessing started"
-bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
-echo "Blessing finished"
+if [ $SANDBOX_SAFE -eq 0 ]; then
+	echo "Blessing started"
+	bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
+	echo "Blessing finished"
+else
+	echo "Skipping blessing on sandbox"
+fi
 
 if ! test -z "$VOLUME_ICON_FILE"; then
 	# tell the volume that it has a special file attribute
