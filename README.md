@@ -17,13 +17,19 @@ If you're an active user and want to be a maintainer, or just want to chat, plea
 Installation
 ------------
 
-By being a shell script, create-dmg installation is very simple. Simply download the [latest release](https://github.com/andreyvit/create-dmg/releases/latest) and run.
+- You can install this script using [Homebrew](https://brew.sh):
 
-You can also clone the entire repository:
+  ```sh
+  brew install create-dmg
+  ```
 
-```sh
-git clone https://github.com/andreyvit/create-dmg.git
-```
+- You can download the [latest release](https://github.com/andreyvit/create-dmg/releases/latest)
+
+- You can also clone the entire repository:
+
+  ```sh
+  git clone https://github.com/andreyvit/create-dmg.git
+  ```
 
 Usage
 -----
