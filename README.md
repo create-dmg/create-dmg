@@ -11,7 +11,7 @@ This project is maintained thanks to the contributors who send pull requests, an
 
 We will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository.
 
-If you're an active user and want to be a maintainer, or just want to chat, please ping us at https://gitter.im/create-dmg/Lobby.
+If you're an active user and want to be a maintainer, or just want to chat, please ping us at [gitter.im/create-dmg/Lobby](https://gitter.im/create-dmg/Lobby).
 
 
 Installation
