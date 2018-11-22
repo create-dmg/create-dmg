@@ -53,6 +53,7 @@ All contents of source\_folder will be copied into the disk image.
 *   **--hide-extension [file name]:** hide the extension of file
 *   **--custom-icon [file name]/[custom icon]/[sample file] [x y]:** set position and custom icon
 *   **--app-drop-link [x y]:** make a drop link to Applications, at location x, y
+*   **--ql-drop-link [x y]:** make a drop link to ~/Library/QuickLook, at location x, y
 *   **--eula [eula file]:** attach a license file to the dmg
 *   **--no-internet-enable:** disable automatic mount&copy
 *   **--format:** specify the final image format (default is UDZO)

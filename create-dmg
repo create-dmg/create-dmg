@@ -40,6 +40,8 @@ function usage() {
 	echo "      set position and custom icon"
 	echo "  --app-drop-link x y"
 	echo "      make a drop link to Applications, at location x,y"
+	echo "  --ql-drop-link x y"
+	echo "      make a drop link to user QuickLook install dir, at location x,y"
 	echo "  --eula eula_file"
 	echo "      attach a license file to the dmg"
 	echo "  --no-internet-enable"
@@ -120,6 +122,11 @@ while test "${1:0:1}" = "-"; do
 		version; exit 0;;
 	--pure-version)
 		pure_version; exit 0;;
+	--ql-drop-link)
+		QL_LINK=$2
+		QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
+		"
+		shift; shift; shift;;
 	--app-drop-link)
 		APPLICATION_LINK=$2
 		APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
@@ -290,6 +297,12 @@ if ! test -z "$APPLICATION_LINK"; then
 	ln -s /Applications "$MOUNT_DIR/Applications"
 fi
 
+if ! test -z "$QL_LINK"; then
+	echo "making link to QuickLook install dir"
+	echo $MOUNT_DIR
+	ln -s "$HOME/Library/QuickLook" "$MOUNT_DIR/QuickLook"
+fi
+
 if ! test -z "$VOLUME_ICON_FILE"; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
@@ -327,7 +340,7 @@ EOS
 	fi
 }
 
-applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
+applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
 echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 "/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
