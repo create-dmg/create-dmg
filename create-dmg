@@ -300,7 +300,7 @@ fi
 if ! test -z "$QL_LINK"; then
 	echo "making link to QuickLook install dir"
 	echo $MOUNT_DIR
-	ln -s "$HOME/Library/QuickLook" "$MOUNT_DIR/QuickLook"
+	ln -s "/Library/QuickLook" "$MOUNT_DIR/QuickLook"
 fi
 
 if ! test -z "$VOLUME_ICON_FILE"; then
