@@ -35,8 +35,9 @@ on run (volumeName)
 			-- Hiding
 			HIDING_CLAUSE
 
-			-- Application Link Clause
+			-- Application and QL Link Clauses
 			APPLICATION_CLAUSE
+			QL_CLAUSE
 			close
 			open
 			-- Force saving of the size
