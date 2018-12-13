@@ -314,7 +314,7 @@ if ! test -z "$ADD_FILE_SOURCES"; then
 	for i in "${!ADD_FILE_SOURCES[@]}"
 	do
 		echo "${ADD_FILE_SOURCES[$i]}"
-		cp "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
+		cp -a "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
 	done
 fi
 
@@ -323,7 +323,7 @@ if ! test -z "$ADD_FOLDER_SOURCES"; then
 	for i in "${!ADD_FOLDER_SOURCES[@]}"
 	do
 		echo "${ADD_FOLDER_SOURCES[$i]}"
-		cp -r "${ADD_FOLDER_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FOLDER_TARGETS[$i]}"
+		cp -a "${ADD_FOLDER_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FOLDER_TARGETS[$i]}"
 	done
 fi
 
