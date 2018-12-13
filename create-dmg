@@ -5,7 +5,7 @@
 set -e;
 
 function pure_version() {
-	echo '1.0.0.4'
+	echo '1.0.0.5'
 }
 
 function version() {
