@@ -60,6 +60,8 @@ function usage() {
 	echo "      execute hdiutil in quiet mode"
 	echo "  --sandbox-safe"
 	echo "      execute hdiutil with sandbox compatibility and do not bless"
+	echo "  --rez rez_path"
+	echo "      use custom path to Rez tool"
 	echo "  --version         show tool version number"
 	echo "  -h, --help        display this help"
 	exit 0
@@ -167,6 +169,9 @@ while test "${1:0:1}" = "-"; do
 	--sandbox-safe)
 		SANDBOX_SAFE=1
 		shift;; 
+	--rez)
+		REZ_PATH=$2
+		shift; shift;;
 	-*)
 		echo "Unknown option $1. Run with --help for help."
 		exit 1;;
@@ -382,11 +387,20 @@ if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
 	echo "adding EULA resources"
 
 	if [ $BREW_INSTALL -eq 0 ]; then
-		"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+		if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
+			"${AUX_PATH}/dmg-license.py" "--rez" "${REZ_PATH}" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+		else
+			"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
+		fi
 	else
-		python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" << 'EOS'
-		# BREW_INLINE_LICENSE_PLACEHOLDER
-EOS
+		if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
+			python - "--rez" "${REZ_PATH}" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" <<-'EOS'
+			EOS
+		else
+			python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" <<-'EOS'
+			EOS
+			# BREW_INLINE_LICENSE_PLACEHOLDER
+		fi
 	fi
 fi
 
