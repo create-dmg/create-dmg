@@ -393,7 +393,15 @@ fi
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
 	echo "not setting 'internet-enable' on the dmg"
 else
-	hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
+	# check if hdiutil supports internet-enable
+	# support was removed in macOS 10.15
+	# https://github.com/andreyvit/create-dmg/issues/76
+	INTERNET_ENABLE_CHECK="$(hdiutil internet-enable -help 2>&1)"
+	if [ $? -eq 0 ]; then
+		hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
+	else
+	  echo "hdiutil does not support internet-enable. Note it was removed in macOS 10.15."
+	fi
 fi
 
 echo "Disk image done"
