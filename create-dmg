@@ -81,6 +81,7 @@ ADD_FOLDER_TARGETS=()
 IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
+SKIP_JENKINS=0
 
 while test "${1:0:1}" = "-"; do
 	case $1 in
@@ -172,6 +173,9 @@ while test "${1:0:1}" = "-"; do
 	--rez)
 		REZ_PATH=$2
 		shift; shift;;
+	--skip-jenkins)
+		SKIP_JENKINS=1
+		shift;;
 	-*)
 		echo "Unknown option $1. Run with --help for help."
 		exit 1;;
@@ -345,14 +349,15 @@ EOS
 	fi
 }
 
-applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
-sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
-echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
-"/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
-echo "Done running the applescript..."
-sleep 4
-
-rm "$APPLESCRIPT"
+if [ $SKIP_JENKINS -eq 0 ]; then
+	applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
+	sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
+	echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
+	"/usr/bin/osascript" "${APPLESCRIPT}" "${VOLUME_NAME}" || true
+	echo "Done running the applescript..."
+	sleep 4
+	rm "$APPLESCRIPT"
+fi
 
 # make sure it's not world writeable
 echo "Fixing permissions..."
