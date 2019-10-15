@@ -403,8 +403,8 @@ if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
 			EOS
 		else
 			python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" <<-'EOS'
-			EOS
 			# BREW_INLINE_LICENSE_PLACEHOLDER
+EOS
 		fi
 	fi
 fi
