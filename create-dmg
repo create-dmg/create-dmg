@@ -251,7 +251,7 @@ fi
 DISK_IMAGE_SIZE=`get_size "${DMG_TEMP_NAME}"`
 
 # Use the custom size if bigger
-if [ $SANDBOX_SAFE -eq 1 ] && [ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]; then
+if [ $SANDBOX_SAFE -eq 1 ] && [ ! -z "$DISK_IMAGE_SIZE_CUSTOM" ] && [ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]; then
 	DISK_IMAGE_SIZE=$DISK_IMAGE_SIZE_CUSTOM
 fi
 
