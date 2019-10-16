@@ -391,21 +391,16 @@ rm -f "${DMG_TEMP_NAME}"
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
 	echo "adding EULA resources"
 
+	REZ_ARG=""
+	if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
+		REZ_ARG="--rez ${REZ_PATH}"
+	fi
 	if [ $BREW_INSTALL -eq 0 ]; then
-		if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
-			"${AUX_PATH}/dmg-license.py" "--rez" "${REZ_PATH}" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
-		else
-			"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}"
-		fi
+		"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 	else
-		if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
-			python - "--rez" "${REZ_PATH}" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" <<-'EOS'
-			EOS
-		else
-			python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" <<-'EOS'
-			# BREW_INLINE_LICENSE_PLACEHOLDER
+		python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG} <<-'EOS'
+		# BREW_INLINE_LICENSE_PLACEHOLDER
 EOS
-		fi
 	fi
 fi
 
