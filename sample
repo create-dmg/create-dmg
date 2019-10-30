@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Since create-dmg does not override, be sure to delete previous DMG
 test -f Application-Installer.dmg && rm Application-Installer.dmg
