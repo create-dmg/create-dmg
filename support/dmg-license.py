@@ -29,6 +29,7 @@ import os
 import sys
 import tempfile
 import optparse
+import subprocess
 
 
 class Path(str):
@@ -129,6 +130,7 @@ data 'STR#' (5002, "English") {
         print("Failed to add license to '%s'" % dmgFile)
 
 if __name__ == '__main__':
+    xcode_developer = subprocess.check_output(['xcode-select', '-p']).rstrip()
     parser = optparse.OptionParser()
     parser.set_usage("""%prog <dmgFile> <licenseFile> [OPTIONS]
   This program adds a software license agreement to a DMG file.
@@ -140,7 +142,7 @@ if __name__ == '__main__':
         '--rez',
         '-r',
         action='store',
-        default='/Applications/Xcode.app/Contents/Developer/Tools/Rez',
+        default=xcode_developer+'/Tools/Rez',
         help='The path to the Rez tool. Defaults to %default'
     )
     parser.add_option(
