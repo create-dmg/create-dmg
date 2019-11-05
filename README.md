@@ -63,7 +63,7 @@ All contents of source\_folder will be copied into the disk image.
 *   **--disk-image-size [x]:** set the disk image size manually to x MB
 *   **--hdiutil-verbose:** execute hdiutil in verbose mode
 *   **--hdiutil-quiet:** execute hdiutil in quiet mode
-*   **--sandbox-safe:** execute hdiutil with sandbox compatibility and don not bless
+*   **--sandbox-safe:** execute hdiutil with sandbox compatibility and do not bless
 *   **--version:** show tool version number
 *   **-h, --help:** display the help
 
