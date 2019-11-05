@@ -48,10 +48,8 @@ function usage() {
 	echo "      disable automatic mount&copy"
 	echo "  --format"
 	echo "      specify the final image format (default is UDZO)"
-	echo "  --add-file target_name path_to_source_file x y"
-	echo "      add additional file (option can be used multiple times)"
-	echo "  --add-folder target_name path_to_source_folder x y"
-	echo "      add additional folder (option can be used multiple times)"
+	echo "  --add-file target_name file|folder x y"
+	echo "      add additional file or folder (can be used multiple times)"
 	echo "  --disk-image-size x"
 	echo "      set the disk image size manually to x MB"
 	echo "  --hdiutil-verbose"
@@ -76,8 +74,6 @@ TEXT_SIZE=16
 FORMAT="UDZO"
 ADD_FILE_SOURCES=()
 ADD_FILE_TARGETS=()
-ADD_FOLDER_SOURCES=()
-ADD_FOLDER_TARGETS=()
 IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
@@ -144,16 +140,9 @@ while test "${1:0:1}" = "-"; do
 	--format)
 		FORMAT="$2"
 		shift; shift;;
-	--add-file)
+	--add-file | --add-folder)
 		ADD_FILE_TARGETS+=("$2")
 		ADD_FILE_SOURCES+=("$3")
-		POSITION_CLAUSE="${POSITION_CLAUSE}
-		set position of item \"$2\" to {$4, $5}
-		"
-		shift; shift; shift; shift; shift;;
-	--add-folder)
-		ADD_FOLDER_TARGETS+=("$2")
-		ADD_FOLDER_SOURCES+=("$3")
 		POSITION_CLAUSE="${POSITION_CLAUSE}
 		set position of item \"$2\" to {$4, $5}
 		"
@@ -267,13 +256,6 @@ if ! test -z "$ADD_FILE_SOURCES"; then
 		DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
 	done
 fi
-if ! test -z "$ADD_FOLDER_SOURCES"; then
-	for i in "${!ADD_FOLDER_SOURCES[@]}"
-	do
-		SOURCE_SIZE=`get_size "${ADD_FOLDER_SOURCES[$i]}"`
-		DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
-	done
-fi
 
 # Add extra space for additional resources
 DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
@@ -324,15 +306,6 @@ if ! test -z "$ADD_FILE_SOURCES"; then
 	do
 		echo "${ADD_FILE_SOURCES[$i]}"
 		cp -a "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
-	done
-fi
-
-if ! test -z "$ADD_FOLDER_SOURCES"; then
-	echo "Copying custom folders..."
-	for i in "${!ADD_FOLDER_SOURCES[@]}"
-	do
-		echo "${ADD_FOLDER_SOURCES[$i]}"
-		cp -a "${ADD_FOLDER_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FOLDER_TARGETS[$i]}"
 	done
 fi
 

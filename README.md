@@ -58,8 +58,7 @@ All contents of source\_folder will be copied into the disk image.
 *   **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
 *   **--no-internet-enable:** disable automatic mount&copy
 *   **--format:** specify the final image format (default is UDZO)
-*   **--add-file \<target_name\> \<path_to_source_file\> \<x\> \<y\>:** add additional file (option can be used multiple times)
-*   **--add-folder \<target_name\> \<path_to_source_folder\> \<x\> \<y\>:** add additional folder (option can be used multiple times)
+*   **--add-file \<target_name\> \<file|folder\> \<x\> \<y\>:** add additional file or folder (can be used multiple times)
 *   **--disk-image-size \<x\>:** set the disk image size manually to x MB
 *   **--hdiutil-verbose:** execute hdiutil in verbose mode
 *   **--hdiutil-quiet:** execute hdiutil in quiet mode
