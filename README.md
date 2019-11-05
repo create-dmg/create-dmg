@@ -76,8 +76,8 @@ Example
 test -f Application-Installer.dmg && rm Application-Installer.dmg
 create-dmg \
 --volname "Application Installer" \
---volicon "application\_icon.icns" \
---background "installer\_background.png" \
+--volicon "application_icon.icns" \
+--background "installer_background.png" \
 --window-pos 200 120 \
 --window-size 800 400 \
 --icon-size 100 \
