@@ -14,54 +14,60 @@ function version() {
 
 function usage() {
 	version
-	echo "Creates a fancy DMG file."
-	echo "Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>"
-	echo "All contents of source_folder will be copied into the disk image."
-	echo "Options:"
-	echo "  --volname name"
-	echo "      set volume name (displayed in the Finder sidebar and window title)"
-	echo "  --volicon icon.icns"
-	echo "      set volume icon"
-	echo "  --background pic.png"
-	echo "      set folder background image (provide png, gif, jpg)"
-	echo "  --window-pos x y"
-	echo "      set position the folder window"
-	echo "  --window-size width height"
-	echo "      set size of the folder window"
-	echo "  --text-size text_size"
-	echo "      set window text size (10-16)"
-	echo "  --icon-size icon_size"
-	echo "      set window icons size (up to 128)"
-	echo "  --icon file_name x y"
-	echo "      set position of the file's icon"
-	echo "  --hide-extension file_name"
-	echo "      hide the extension of file"
-	echo "  --custom-icon file_name custom_icon_or_sample_file x y"
-	echo "      set position and custom icon"
-	echo "  --app-drop-link x y"
-	echo "      make a drop link to Applications, at location x,y"
-	echo "  --ql-drop-link x y"
-	echo "      make a drop link to user QuickLook install dir, at location x,y"
-	echo "  --eula eula_file"
-	echo "      attach a license file to the dmg"
-	echo "  --no-internet-enable"
-	echo "      disable automatic mount&copy"
-	echo "  --format"
-	echo "      specify the final image format (default is UDZO)"
-	echo "  --add-file target_name file|folder x y"
-	echo "      add additional file or folder (can be used multiple times)"
-	echo "  --disk-image-size x"
-	echo "      set the disk image size manually to x MB"
-	echo "  --hdiutil-verbose"
-	echo "      execute hdiutil in verbose mode"  
-	echo "  --hdiutil-quiet"
-	echo "      execute hdiutil in quiet mode"
-	echo "  --sandbox-safe"
-	echo "      execute hdiutil with sandbox compatibility and do not bless"
-	echo "  --rez rez_path"
-	echo "      use custom path to Rez tool"
-	echo "  --version         show tool version number"
-	echo "  -h, --help        display this help"
+	cat <<EOHELP
+Creates a fancy DMG file.
+
+Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>
+
+All contents of source_folder will be copied into the disk image.
+
+Options:
+  --volname name
+      set volume name (displayed in the Finder sidebar and window title)
+  --volicon icon.icns
+      set volume icon
+  --background pic.png
+      set folder background image (provide png, gif, jpg)
+  --window-pos x y
+      set position the folder window
+  --window-size width height
+      set size of the folder window
+  --text-size text_size
+      set window text size (10-16)
+  --icon-size icon_size
+      set window icons size (up to 128)
+  --icon file_name x y
+      set position of the file's icon
+  --hide-extension file_name
+      hide the extension of file
+  --custom-icon file_name custom_icon_or_sample_file x y
+      set position and custom icon
+  --app-drop-link x y
+      make a drop link to Applications, at location x,y
+  --ql-drop-link x y
+      make a drop link to user QuickLook install dir, at location x,y
+  --eula eula_file
+      attach a license file to the dmg
+  --no-internet-enable
+      disable automatic mount&copy
+  --format
+      specify the final image format (default is UDZO)
+  --add-file target_name file|folder x y
+      add additional file or folder (can be used multiple times)
+  --disk-image-size x
+      set the disk image size manually to x MB
+  --hdiutil-verbose
+      execute hdiutil in verbose mode
+  --hdiutil-quiet
+      execute hdiutil in quiet mode
+  --sandbox-safe
+      execute hdiutil with sandbox compatibility and do not bless
+  --rez rez_path
+      use custom path to Rez tool
+  --version         show tool version number
+  -h, --help        display this help screen
+
+EOHELP
 	exit 0
 }
 
