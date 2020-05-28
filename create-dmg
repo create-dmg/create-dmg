@@ -22,39 +22,39 @@ Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>
 All contents of source_folder will be copied into the disk image.
 
 Options:
-  --volname name
+  --volname <name>
       set volume name (displayed in the Finder sidebar and window title)
-  --volicon icon.icns
+  --volicon <icon.icns>
       set volume icon
-  --background pic.png
-      set folder background image (provide png, gif, jpg)
-  --window-pos x y
+  --background <pic.png>
+      set folder background image (provide png, gif, or jpg)
+  --window-pos <x> <y>
       set position the folder window
-  --window-size width height
+  --window-size <width> <height>
       set size of the folder window
-  --text-size text_size
+  --text-size <text_size>
       set window text size (10-16)
-  --icon-size icon_size
+  --icon-size <icon_size>
       set window icons size (up to 128)
-  --icon file_name x y
+  --icon file_name <x> <y>
       set position of the file's icon
-  --hide-extension file_name
+  --hide-extension <file_name>
       hide the extension of file
-  --custom-icon file_name custom_icon_or_sample_file x y
+  --custom-icon <file_name> <custom_icon_or_sample_file> <x> <y>
       set position and custom icon
-  --app-drop-link x y
+  --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
-  --ql-drop-link x y
+  --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
-  --eula eula_file
-      attach a license file to the dmg
+  --eula <eula_file>
+      attach a license file to the dmg (plain text or RTF)
   --no-internet-enable
-      disable automatic mount&copy
-  --format
+      disable automatic mount & copy
+  --format <format>
       specify the final image format (default is UDZO)
-  --add-file target_name file|folder x y
+  --add-file <target_name> <file>|<folder> <x> <y>
       add additional file or folder (can be used multiple times)
-  --disk-image-size x
+  --disk-image-size <x>
       set the disk image size manually to x MB
   --hdiutil-verbose
       execute hdiutil in verbose mode
@@ -62,10 +62,12 @@ Options:
       execute hdiutil in quiet mode
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless
-  --rez rez_path
+  --rez <rez_path>
       use custom path to Rez tool
-  --version         show tool version number
-  -h, --help        display this help screen
+  --version
+	    show create-dmg version number
+  -h, --help
+	    display this help screen
 
 EOHELP
 	exit 0
