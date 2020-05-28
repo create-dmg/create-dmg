@@ -283,13 +283,13 @@ if ! test -z "$BACKGROUND_FILE"; then
 fi
 
 if ! test -z "$APPLICATION_LINK"; then
-	echo "making link to Applications dir"
+	echo "Making link to Applications dir..."
 	echo $MOUNT_DIR
 	ln -s /Applications "$MOUNT_DIR/Applications"
 fi
 
 if ! test -z "$QL_LINK"; then
-	echo "making link to QuickLook install dir"
+	echo "Making link to QuickLook install dir..."
 	echo $MOUNT_DIR
 	ln -s "/Library/QuickLook" "$MOUNT_DIR/QuickLook"
 fi
@@ -325,7 +325,7 @@ EOS
 if [ $SKIP_JENKINS -eq 0 ]; then
 	applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
 	sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
-	echo "Running Applescript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
+	echo "Running AppleScript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
 	(/usr/bin/osascript "${APPLESCRIPT}" "${VOLUME_NAME}" || if [[ "$?" -ne 0 ]]; then echo "Failed running AppleScript"; hdiutil detach "${DEV_NAME}"; exit 64; fi)
 	echo "Done running the applescript..."
 	sleep 4
@@ -335,7 +335,7 @@ fi
 # make sure it's not world writeable
 echo "Fixing permissions..."
 chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
-echo "Done fixing permissions."
+echo "Done fixing permissions"
 
 # make the top window open itself on mount:
 if [ $SANDBOX_SAFE -eq 0 ]; then
@@ -362,7 +362,7 @@ rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
-	echo "adding EULA resources"
+	echo "Adding EULA resources..."
 
 	REZ_ARG=""
 	if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
@@ -378,7 +378,7 @@ EOS
 fi
 
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
-	echo "not setting 'internet-enable' on the dmg"
+	echo "Not setting 'internet-enable' on the dmg, per caller request"
 else
 	# check if hdiutil supports internet-enable
 	# support was removed in macOS 10.15
