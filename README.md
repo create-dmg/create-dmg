@@ -3,7 +3,6 @@ create-dmg
 
 A shell script to build fancy DMGs.
 
-
 Status and contribution policy
 ------------------------------
 
@@ -45,30 +44,29 @@ All contents of source\_folder will be copied into the disk image.
 
 **Options:**
 
-*   **--volname \<name\>:** set volume name (displayed in the Finder sidebar and window title)
-*   **--volicon \<icon.icns\>:** set volume icon
-*   **--background \<pic.png\>:** set folder background image (provide png, gif, jpg)
-*   **--window-pos \<x\> \<y\>:** set position the folder window
-*   **--window-size \<width\> \<height\>:** set size of the folder window
-*   **--text-size \<text_size\>:** set window text size (10-16)
-*   **--icon-size \<icon_size\>:** set window icons size (up to 128)
-*   **--icon \<file_name\> \<x\> \<y\>:** set position of the file's icon
-*   **--hide-extension \<file_name\>:** hide the extension of file
-*   **--custom-icon \<file_name|custom_icon|sample_file\> \<x\> \<y\>:** set position and custom icon
-*   **--app-drop-link \<x\> \<y\>:** make a drop link to Applications, at location x, y
-*   **--ql-drop-link \<x\> \<y\>:** make a drop link to /Library/QuickLook, at location x, y
-*   **--eula \<eula_file\>:** attach a license file to the dmg
-*   **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
-*   **--no-internet-enable:** disable automatic mount&copy
-*   **--format:** specify the final image format (default is UDZO)
-*   **--add-file \<target_name\> \<file|folder\> \<x\> \<y\>:** add additional file or folder (can be used multiple times)
-*   **--disk-image-size \<x\>:** set the disk image size manually to x MB
-*   **--hdiutil-verbose:** execute hdiutil in verbose mode
-*   **--hdiutil-quiet:** execute hdiutil in quiet mode
-*   **--sandbox-safe:** execute hdiutil with sandbox compatibility and do not bless
-*   **--version:** show tool version number
-*   **-h, --help:** display the help
-
+- **--volname \<name\>:** set volume name (displayed in the Finder sidebar and window title)
+- **--volicon \<icon.icns\>:** set volume icon
+- **--background \<pic.png\>:** set folder background image (provide png, gif, jpg)
+- **--window-pos \<x\> \<y\>:** set position the folder window
+- **--window-size \<width\> \<height\>:** set size of the folder window
+- **--text-size \<text_size\>:** set window text size (10-16)
+- **--icon-size \<icon_size\>:** set window icons size (up to 128)
+- **--icon \<file_name\> \<x\> \<y\>:** set position of the file's icon
+- **--hide-extension \<file_name\>:** hide the extension of file
+- **--custom-icon \<file_name|custom_icon|sample_file\> \<x\> \<y\>:** set position and -tom icon
+- **--app-drop-link \<x\> \<y\>:** make a drop link to Applications, at location x, y
+- **--ql-drop-link \<x\> \<y\>:** make a drop link to /Library/QuickLook, at location x, y
+- **--eula \<eula_file\>:** attach a license file to the dmg
+- **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
+- **--no-internet-enable:** disable automatic mount&copy
+- **--format:** specify the final image format (default is UDZO)
+- **--add-file \<target_name\> \<file|folder\> \<x\> \<y\>:** add additional file or folder (can be used multiple times)
+- **--disk-image-size \<x\>:** set the disk image size manually to x MB
+- **--hdiutil-verbose:** execute hdiutil in verbose mode
+- **--hdiutil-quiet:** execute hdiutil in quiet mode
+- **--sandbox-safe:** execute hdiutil with sandbox compatibility and do not bless
+- **--version:** show tool version number
+- **-h, --help:** display the help
 
 Example
 -------
@@ -93,6 +91,6 @@ create-dmg \
 Alternatives
 ------------
 
-* [node-appdmg](https://github.com/LinusU/node-appdmg)
-* [dmgbuild](https://pypi.python.org/pypi/dmgbuild)
-* see the [StackOverflow question](http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools)
+- [node-appdmg](https://github.com/LinusU/node-appdmg)
+- [dmgbuild](https://pypi.python.org/pypi/dmgbuild)
+- see the [StackOverflow question](http://stackoverflow.com/questions/96882/how-do-i-create-a-nice-looking-dmg-for-mac-os-x-using-command-line-tools)
