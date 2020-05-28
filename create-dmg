@@ -417,7 +417,7 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 		default_rez="$xcode_path/Tools/Rez"
 		REZ_ARG="--rez ${default_rez}"
 	fi
-	"${CDMG_SUPPORT_DIR}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
+	"${CDMG_SUPPORT_DIR}/licenseDMG.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 fi
 
 # Enable "internet", whatever that is
