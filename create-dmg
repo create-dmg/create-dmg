@@ -5,7 +5,7 @@
 set -e;
 
 function pure_version() {
-	echo '1.0.0.8-SNAPSHOT'
+	echo '1.0.8-SNAPSHOT'
 }
 
 function version() {

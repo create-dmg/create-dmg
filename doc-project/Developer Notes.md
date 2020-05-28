@@ -24,3 +24,12 @@ That might be nice to have.
 
 Each example is in its own subfolder.
 The subfolder prefix number is arbitrary; these numbers should roughly be in order of "advancedness" of examples, so it makes sense for users to go through them in order.
+
+## Versioning
+
+As of May 2020, we're using SemVer versioning.
+The old version numbers were 4-parters, like "1.0.0.7".
+Now we use 3-part SemVer versions, like "1.0.8".
+This change happened after version 1.0.0.7; 1.0.8 is the next release after 1.0.0.7.
+
+The suffix "-SNAPSHOT" is used to denote a version that is still under development.
