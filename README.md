@@ -88,6 +88,8 @@ create-dmg \
   "source_folder/"
 ```
 
+See the `examples` folder in the source tree for more examples.
+
 Alternatives
 ------------
 
