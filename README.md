@@ -7,12 +7,15 @@ A shell script to build fancy DMGs.
 Status and contribution policy
 ------------------------------
 
-This project is maintained thanks to the contributors who send pull requests, and now (Sep 2018) with the help of [@aonez](https://github.com/aonez).
+Create-dmg is maintained thanks to the contributors who send pull requests.
+As of May 2020, [Andrew Janke](https://github.com/apjanke) is the primary maintainer, and (since September 2018) [@aonez](https://github.com/aonez) has helped with the maintenance.
+The project home page is <https://github.com/create-dmg/create-dmg>.
 
-We will merge any pull request that adds something useful and does not break existing things, and will often grant commit access to the repository.
+We will merge any pull request that adds something useful and does not break existing things.
 
-If you're an active user and want to be a maintainer, or just want to chat, please ping us at [gitter.im/create-dmg/Lobby](https://gitter.im/create-dmg/Lobby).
+If you're an active user and want to be a maintainer, or just want to chat, please ping us on Gitter at [gitter.im/create-dmg/Lobby](https://gitter.im/create-dmg/Lobby), or [email Andrew directly](floss@apjanke.net).
 
+Create-dmg was originally created by [Andrey Tarantsov](https://github.com/andreyvit).
 
 Installation
 ------------
@@ -23,12 +26,12 @@ Installation
   brew install create-dmg
   ```
 
-- You can download the [latest release](https://github.com/andreyvit/create-dmg/releases/latest)
+- You can download the [latest release](https://github.com/create-dmg/create-dmg/releases/latest)
 
 - You can also clone the entire repository:
 
   ```sh
-  git clone https://github.com/andreyvit/create-dmg.git
+  git clone https://github.com/create-dmg/create-dmg.git
   ```
 
 Usage
