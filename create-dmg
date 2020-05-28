@@ -107,7 +107,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 			shift; shift;;
 		--background)
 			BACKGROUND_FILE="$2"
-			BACKGROUND_FILE_NAME="$(basename $BACKGROUND_FILE)"
+			BACKGROUND_FILE_NAME="$(basename "$BACKGROUND_FILE")"
 			BACKGROUND_CLAUSE="set background picture of opts to file \".background:$BACKGROUND_FILE_NAME\""
 			REPOSITION_HIDDEN_FILES_CLAUSE="set position of every item to {theBottomRightX + 100, 100}"
 			shift; shift;;
@@ -178,7 +178,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 			SANDBOX_SAFE=1
 			shift;; 
 		--rez)
-			REZ_PATH=$2
+			REZ_PATH="$2"
 			shift; shift;;
 		--skip-jenkins)
 			SKIP_JENKINS=1
