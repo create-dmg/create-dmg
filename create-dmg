@@ -340,7 +340,7 @@ if [[ -n "$ADD_FILE_SOURCES" ]]; then
 	done
 fi
 
-# run applescript
+# Run applescript
 APPLESCRIPT_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 
 if [[ $SKIP_JENKINS -eq 0 ]]; then
@@ -367,12 +367,12 @@ if [[ $SKIP_JENKINS -eq 0 ]]; then
 	rm "$APPLESCRIPT_FILE"
 fi
 
-# make sure it's not world writeable
+# Make sure it's not world writeable
 echo "Fixing permissions..."
 chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions"
 
-# make the top window open itself on mount:
+# Make the top window open itself on mount:
 if [[ $SANDBOX_SAFE -eq 0 ]]; then
 	echo "Blessing started"
 	bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
@@ -382,20 +382,20 @@ else
 fi
 
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
-	# tell the volume that it has a special file attribute
+	# Tell the volume that it has a special file attribute
 	SetFile -a C "$MOUNT_DIR"
 fi
 
-# unmount
+# Unmount
 echo "Unmounting disk image..."
 hdiutil detach "${DEV_NAME}"
 
-# compress image
+# Compress image
 echo "Compressing disk image..."
 hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 rm -f "${DMG_TEMP_NAME}"
 
-# adding EULA resources
+# Adding EULA resources
 if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	echo "Adding EULA resources..."
 	REZ_ARG=""
@@ -405,12 +405,12 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	"${CDMG_SUPPORT_DIR}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 fi
 
+# Enable "internet", whatever that is
 if [[ ! -z "${NOINTERNET}" && "${NOINTERNET}" == 1 ]]; then
 	echo "Not setting 'internet-enable' on the dmg, per caller request"
 else
-	# check if hdiutil supports internet-enable
-	# support was removed in macOS 10.15
-	# https://github.com/andreyvit/create-dmg/issues/76
+	# Check if hdiutil supports internet-enable
+	# Support was removed in macOS 10.15. See https://github.com/andreyvit/create-dmg/issues/76
 	if hdiutil internet-enable -help >/dev/null 2>/dev/null; then
 		hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
 	else
@@ -418,5 +418,6 @@ else
 	fi
 fi
 
+# All done!
 echo "Disk image done"
 exit 0
