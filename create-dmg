@@ -2,6 +2,7 @@
 
 # Create a read-only disk image of the contents of a folder
 
+# Bail out on any unhandled errors
 set -e;
 
 CDMG_VERSION='1.0.8-SNAPSHOT'
