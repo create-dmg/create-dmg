@@ -96,7 +96,7 @@ EOHELP
 
 # Argument parsing
 
-while test "${1:0:1}" = "-"; do
+while [[ "${1:0:1}" = "-" ]]; do
 	case $1 in
 	--volname)
 		VOLUME_NAME="$2"
@@ -183,7 +183,7 @@ while test "${1:0:1}" = "-"; do
 		SKIP_JENKINS=1
 		shift;;
 	-*)
-		echo "Unknown option $1. Run with --help for help."
+		echo "Unknown option: $1. Run 'create-dmg --help' for help."
 		exit 1;;
 	esac
 	case $FORMAT in
@@ -194,10 +194,10 @@ while test "${1:0:1}" = "-"; do
 	esac
 done
 
-test -z "$2" && {
-	echo "Not enough arguments. Invoke with --help for help."
+if [[ -z "$2" ]]; then
+	echo "Not enough arguments. Run 'create-dmg --help' for help."
 	exit 1
-}
+fi
 
 DMG_PATH="$1"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
@@ -223,21 +223,25 @@ else
 	CDMG_SUPPORT_DIR="$prefix_dir/share/create-dmg/support"
 fi
 
-test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
+if [[ -z "$VOLUME_NAME" ]]; then
+	VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
+fi
 
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
 	echo >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR"
 	exit 1
 fi
 
-if [ -f "$SRC_FOLDER/.DS_Store" ]; then
+if [[ -f "$SRC_FOLDER/.DS_Store" ]]; then
 	echo "Deleting .DS_Store found in source folder"
 	rm "$SRC_FOLDER/.DS_Store"
 fi
 
 # Create the image
 echo "Creating disk image..."
-test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
+if [[ -f "${DMG_TEMP_NAME}" ]]; then
+	rm -f "${DMG_TEMP_NAME}"
+fi
 
 # Use Megabytes since hdiutil fails with very large byte numbers
 function blocks_to_megabytes() {
@@ -254,7 +258,7 @@ function get_size() {
 
 # Create the DMG with the specified size or the hdiutil estimation
 CUSTOM_SIZE=''
-if ! test -z "$DISK_IMAGE_SIZE"; then
+if [[ -n "$DISK_IMAGE_SIZE" ]]; then
 	CUSTOM_SIZE="-size ${DISK_IMAGE_SIZE}m"
 fi
 
@@ -271,14 +275,13 @@ fi
 DISK_IMAGE_SIZE=$(get_size "${DMG_TEMP_NAME}")
 
 # Use the custom size if bigger
-if [ $SANDBOX_SAFE -eq 1 ] && [ ! -z "$DISK_IMAGE_SIZE_CUSTOM" ] && [ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]; then
+if [[ $SANDBOX_SAFE -eq 1 ]] && [[ ! -z "$DISK_IMAGE_SIZE_CUSTOM" ]] && [[ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]]; then
 	DISK_IMAGE_SIZE=$DISK_IMAGE_SIZE_CUSTOM
 fi
 
 # Estimate the additional soruces size
-if ! test -z "$ADD_FILE_SOURCES"; then
-	for i in "${!ADD_FILE_SOURCES[@]}"
-	do
+if [[ -n "$ADD_FILE_SOURCES" ]]; then
+	for i in "${!ADD_FILE_SOURCES[@]}"; do
 		SOURCE_SIZE=$(get_size "${ADD_FILE_SOURCES[$i]}")
 		DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
 	done
@@ -297,40 +300,41 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 # Try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
 DEV_NAME=$(hdiutil info | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
-test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
+if [[ -d "${MOUNT_DIR}" ]]; then
+	hdiutil detach "${DEV_NAME}"
+fi
 
 echo "Mount directory: $MOUNT_DIR"
 DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 
-if ! test -z "$BACKGROUND_FILE"; then
+if [[ -n "$BACKGROUND_FILE" ]]; then
 	echo "Copying background file..."
-	test -d "$MOUNT_DIR/.background" || mkdir "$MOUNT_DIR/.background"
+	[[ -d "$MOUNT_DIR/.background" ]] || mkdir "$MOUNT_DIR/.background"
 	cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
-if ! test -z "$APPLICATION_LINK"; then
+if [[ -n "$APPLICATION_LINK" ]]; then
 	echo "Making link to Applications dir..."
 	echo $MOUNT_DIR
 	ln -s /Applications "$MOUNT_DIR/Applications"
 fi
 
-if ! test -z "$QL_LINK"; then
+if [[ -n "$QL_LINK" ]]; then
 	echo "Making link to QuickLook install dir..."
 	echo $MOUNT_DIR
 	ln -s "/Library/QuickLook" "$MOUNT_DIR/QuickLook"
 fi
 
-if ! test -z "$VOLUME_ICON_FILE"; then
+if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
 	SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
 fi
 
-if ! test -z "$ADD_FILE_SOURCES"; then
+if [[ -n "$ADD_FILE_SOURCES" ]]; then
 	echo "Copying custom files..."
-	for i in "${!ADD_FILE_SOURCES[@]}"
-	do
+	for i in "${!ADD_FILE_SOURCES[@]}"; do
 		echo "${ADD_FILE_SOURCES[$i]}"
 		cp -a "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
 	done
@@ -339,7 +343,7 @@ fi
 # run applescript
 APPLESCRIPT_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 
-if [ $SKIP_JENKINS -eq 0 ]; then
+if [[ $SKIP_JENKINS -eq 0 ]]; then
 	cat "$CDMG_SUPPORT_DIR/template.applescript" \
 		| sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" \
 				-e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
@@ -354,11 +358,9 @@ if [ $SKIP_JENKINS -eq 0 ]; then
 		# Okay, we're cool
 		true
 	else
-		if [[ "$?" -ne 0 ]]; then 
-			echo "Failed running AppleScript"
-			hdiutil detach "${DEV_NAME}"
-			exit 64
-		fi
+		echo "Failed running AppleScript"
+		hdiutil detach "${DEV_NAME}"
+		exit 64
 	fi
 	echo "Done running the AppleScript..."
 	sleep 4
@@ -371,7 +373,7 @@ chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions"
 
 # make the top window open itself on mount:
-if [ $SANDBOX_SAFE -eq 0 ]; then
+if [[ $SANDBOX_SAFE -eq 0 ]]; then
 	echo "Blessing started"
 	bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
 	echo "Blessing finished"
@@ -379,7 +381,7 @@ else
 	echo "Skipping blessing on sandbox"
 fi
 
-if ! test -z "$VOLUME_ICON_FILE"; then
+if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	# tell the volume that it has a special file attribute
 	SetFile -a C "$MOUNT_DIR"
 fi
@@ -394,16 +396,16 @@ hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAG
 rm -f "${DMG_TEMP_NAME}"
 
 # adding EULA resources
-if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
+if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	echo "Adding EULA resources..."
 	REZ_ARG=""
-	if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
+	if [[ -n "${REZ_PATH}" && "${REZ_PATH}" != "-null-" ]]; then
 		REZ_ARG="--rez ${REZ_PATH}"
 	fi
 	"${CDMG_SUPPORT_DIR}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 fi
 
-if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
+if [[ ! -z "${NOINTERNET}" && "${NOINTERNET}" == 1 ]]; then
 	echo "Not setting 'internet-enable' on the dmg, per caller request"
 else
 	# check if hdiutil supports internet-enable
