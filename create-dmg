@@ -25,7 +25,6 @@ HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
 SKIP_JENKINS=0
 
-
 function pure_version() {
 	echo "$CDMG_VERSION"
 }
