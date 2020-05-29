@@ -36,6 +36,7 @@ function version() {
 function usage() {
 	version
 	cat <<EOHELP
+
 Creates a fancy DMG file.
 
 Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>
