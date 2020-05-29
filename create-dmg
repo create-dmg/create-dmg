@@ -230,8 +230,8 @@ function blocks_to_megabytes() {
 
 function get_size() {
 	# Get block size in disk
-	bytes_size=`du -s "$1" | sed -e 's/	.*//g'`
-	echo `blocks_to_megabytes $bytes_size`
+	bytes_size=$(du -s "$1" | sed -e 's/	.*//g')
+	echo $(blocks_to_megabytes $bytes_size)
 }
 
 # Create the DMG with the specified size or the hdiutil estimation
@@ -249,7 +249,7 @@ else
 fi
 
 # Get the created DMG actual size
-DISK_IMAGE_SIZE=`get_size "${DMG_TEMP_NAME}"`
+DISK_IMAGE_SIZE=$(get_size "${DMG_TEMP_NAME}")
 
 # Use the custom size if bigger
 if [ $SANDBOX_SAFE -eq 1 ] && [ ! -z "$DISK_IMAGE_SIZE_CUSTOM" ] && [ $DISK_IMAGE_SIZE_CUSTOM -gt $DISK_IMAGE_SIZE ]; then
@@ -260,7 +260,7 @@ fi
 if ! test -z "$ADD_FILE_SOURCES"; then
 	for i in "${!ADD_FILE_SOURCES[@]}"
 	do
-		SOURCE_SIZE=`get_size "${ADD_FILE_SOURCES[$i]}"`
+		SOURCE_SIZE=$(get_size "${ADD_FILE_SOURCES[$i]}")
 		DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + $SOURCE_SIZE)
 	done
 fi
