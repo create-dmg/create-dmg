@@ -41,7 +41,7 @@ Creates a fancy DMG file.
 
 Usage:  $(basename $0) [options] <output_name.dmg> <source_folder>
 
-All contents of source_folder will be copied into the disk image.
+All contents of <source_folder> will be copied into the disk image.
 
 Options:
   --volname <name>
