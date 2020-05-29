@@ -358,7 +358,7 @@ if [[ $SKIP_JENKINS -eq 0 ]]; then
 		# Okay, we're cool
 		true
 	else
-		echo "Failed running AppleScript"
+		echo >&2 "Failed running AppleScript"
 		hdiutil detach "${DEV_NAME}"
 		exit 64
 	fi
