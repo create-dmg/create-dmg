@@ -412,6 +412,10 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	REZ_ARG=""
 	if [[ -n "${REZ_PATH}" && "${REZ_PATH}" != "-null-" ]]; then
 		REZ_ARG="--rez ${REZ_PATH}"
+	else
+		xcode_path=$(xcode-select -p)
+		default_rez="$xcode_path/Tools/Rez"
+		REZ_ARG="--rez ${default_rez}"
 	fi
 	"${CDMG_SUPPORT_DIR}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 fi
