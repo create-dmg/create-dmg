@@ -188,10 +188,13 @@ while [[ "${1:0:1}" = "-" ]]; do
 			exit 1;;
 	esac
 	case $FORMAT in
-	UDZO)
-		IMAGEKEY="-imagekey zlib-level=9";;
-	UDBZ)
-		IMAGEKEY="-imagekey bzip2-level=9";;
+		UDZO)
+			IMAGEKEY="-imagekey zlib-level=9";;
+		UDBZ)
+			IMAGEKEY="-imagekey bzip2-level=9";;
+		*)
+			echo >&2 "Unknown format: $FORMAT"
+			exit 1;;
 	esac
 done
 
