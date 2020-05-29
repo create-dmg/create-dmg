@@ -25,9 +25,13 @@ Installation
   brew install create-dmg
   ```
 
-- You can download the [latest release](https://github.com/create-dmg/create-dmg/releases/latest)
+- You can download the [latest release](https://github.com/create-dmg/create-dmg/releases/latest) and install it from there:
 
-- You can also clone the entire repository:
+  ```sh
+  make install
+  ```
+
+- You can also clone the entire repository and run it locally from there:
 
   ```sh
   git clone https://github.com/create-dmg/create-dmg.git

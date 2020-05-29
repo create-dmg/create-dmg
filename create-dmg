@@ -4,8 +4,29 @@
 
 set -e;
 
+CDMG_VERSION='1.0.8-SNAPSHOT'
+
+# The full path to the "support/" directory this script is using
+# (This will be set up by code later in the script.)
+CDMG_SUPPORT_DIR=""
+
+WINX=10
+WINY=60
+WINW=500
+WINH=350
+ICON_SIZE=128
+TEXT_SIZE=16
+FORMAT="UDZO"
+ADD_FILE_SOURCES=()
+ADD_FILE_TARGETS=()
+IMAGEKEY=""
+HDIUTIL_VERBOSITY=""
+SANDBOX_SAFE=0
+SKIP_JENKINS=0
+
+
 function pure_version() {
-	echo '1.0.8-SNAPSHOT'
+	echo "$CDMG_VERSION"
 }
 
 function version() {
@@ -73,19 +94,7 @@ EOHELP
 	exit 0
 }
 
-WINX=10
-WINY=60
-WINW=500
-WINH=350
-ICON_SIZE=128
-TEXT_SIZE=16
-FORMAT="UDZO"
-ADD_FILE_SOURCES=()
-ADD_FILE_TARGETS=()
-IMAGEKEY=""
-HDIUTIL_VERBOSITY=""
-SANDBOX_SAFE=0
-SKIP_JENKINS=0
+# Argument parsing
 
 while test "${1:0:1}" = "-"; do
 	case $1 in
@@ -190,30 +199,39 @@ test -z "$2" && {
 	exit 1
 }
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DMG_PATH="$1"
+SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
+
+# Main script logic
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DMG_DIRNAME="$(dirname "$DMG_PATH")"
 DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
 DMG_TEMP_NAME="$DMG_DIR/rw.${DMG_NAME}"
-SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
+
+# Detect where we're running from
+
+sentinel_file="$SCRIPT_DIR/.this-is-the-create-dmg-repo"
+if [[ -f "$sentinel_file" ]]; then
+	# We're running from inside a repo
+	CDMG_SUPPORT_DIR="$SCRIPT_DIR/support"
+else
+	# We're running inside an installed location
+	bin_dir="$SCRIPT_DIR"
+	prefix_dir=$(dirname "$bin_dir")
+	CDMG_SUPPORT_DIR="$prefix_dir/share/create-dmg/support"
+fi
 
 test -z "$VOLUME_NAME" && VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
 
-# brew formula will set this as 1 and embed the support scripts
-BREW_INSTALL=0
-
-AUX_PATH="$SCRIPT_DIR/support"
-
-if [ $BREW_INSTALL -eq 0 ]; then
-	test -d "$AUX_PATH" || {
-		echo "Cannot find support directory: $AUX_PATH"
-		exit 1
-	}
+if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
+	echo >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR"
+	exit 1
 fi
 
 if [ -f "$SRC_FOLDER/.DS_Store" ]; then
-	echo "Deleting any .DS_Store in source folder"
+	echo "Deleting .DS_Store found in source folder"
 	rm "$SRC_FOLDER/.DS_Store"
 fi
 
@@ -221,7 +239,7 @@ fi
 echo "Creating disk image..."
 test -f "${DMG_TEMP_NAME}" && rm -f "${DMG_TEMP_NAME}"
 
-# Using Megabytes since hdiutil fails with very large Byte numbers
+# Use Megabytes since hdiutil fails with very large byte numbers
 function blocks_to_megabytes() {
 	# Add 1 extra MB, since there's no decimal retention here
 	MB_SIZE=$((($1 * 512 / 1000 / 1000) + 1))
@@ -240,8 +258,9 @@ if ! test -z "$DISK_IMAGE_SIZE"; then
 	CUSTOM_SIZE="-size ${DISK_IMAGE_SIZE}m"
 fi
 
-if [ $SANDBOX_SAFE -eq 0 ]; then
-	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+if [[ $SANDBOX_SAFE -eq 0 ]]; then
+	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
+		-fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
 else	
 	hdiutil makehybrid ${HDIUTIL_VERBOSITY} -default-volume-name "${VOLUME_NAME}" -hfs -o "${DMG_TEMP_NAME}" "$SRC_FOLDER"
 	hdiutil convert -format UDRW -ov -o "${DMG_TEMP_NAME}" "${DMG_TEMP_NAME}"
@@ -271,11 +290,11 @@ DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
 # Resize the image for the extra stuff
 hdiutil resize ${HDIUTIL_VERBOSITY} -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
-# mount it
+# Mount it
 echo "Mounting disk image..."
 MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 
-# try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
+# Try unmount dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
 echo "Unmounting disk image..."
 DEV_NAME=$(hdiutil info | egrep --color=never '^/dev/' | sed 1q | awk '{print $1}')
 test -d "${MOUNT_DIR}" && hdiutil detach "${DEV_NAME}"
@@ -318,26 +337,32 @@ if ! test -z "$ADD_FILE_SOURCES"; then
 fi
 
 # run applescript
-APPLESCRIPT=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
-
-function applescript_source() {
-	if [ $BREW_INSTALL -eq 0 ]; then
-		cat "$AUX_PATH/template.applescript"
-	else
-		cat << 'EOS'
-		# BREW_INLINE_APPLESCRIPT_PLACEHOLDER
-EOS
-	fi
-}
+APPLESCRIPT_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 
 if [ $SKIP_JENKINS -eq 0 ]; then
-	applescript_source | sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" -e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" | perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" | perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" | perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" | perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" >"$APPLESCRIPT"
+	cat "$CDMG_SUPPORT_DIR/template.applescript" \
+		| sed -e "s/WINX/$WINX/g" -e "s/WINY/$WINY/g" -e "s/WINW/$WINW/g" -e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" \
+				-e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" -e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
+		| perl -pe  "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" \
+		| perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" \
+		| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
+		| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
+		> "$APPLESCRIPT_FILE"
 	sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
-	echo "Running AppleScript: /usr/bin/osascript \"${APPLESCRIPT}\" \"${VOLUME_NAME}\""
-	(/usr/bin/osascript "${APPLESCRIPT}" "${VOLUME_NAME}" || if [[ "$?" -ne 0 ]]; then echo "Failed running AppleScript"; hdiutil detach "${DEV_NAME}"; exit 64; fi)
-	echo "Done running the applescript..."
+	echo "Running AppleScript: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
+	if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
+		# Okay, we're cool
+		true
+	else
+		if [[ "$?" -ne 0 ]]; then 
+			echo "Failed running AppleScript"
+			hdiutil detach "${DEV_NAME}"
+			exit 64
+		fi
+	fi
+	echo "Done running the AppleScript..."
 	sleep 4
-	rm "$APPLESCRIPT"
+	rm "$APPLESCRIPT_FILE"
 fi
 
 # make sure it's not world writeable
@@ -371,18 +396,11 @@ rm -f "${DMG_TEMP_NAME}"
 # adding EULA resources
 if [ ! -z "${EULA_RSRC}" -a "${EULA_RSRC}" != "-null-" ]; then
 	echo "Adding EULA resources..."
-
 	REZ_ARG=""
 	if [ ! -z "${REZ_PATH}" -a "${REZ_PATH}" != "-null-" ]; then
 		REZ_ARG="--rez ${REZ_PATH}"
 	fi
-	if [ $BREW_INSTALL -eq 0 ]; then
-		"${AUX_PATH}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
-	else
-		python - "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG} <<-'EOS'
-		# BREW_INLINE_LICENSE_PLACEHOLDER
-EOS
-	fi
+	"${CDMG_SUPPORT_DIR}/dmg-license.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
 fi
 
 if [ ! -z "${NOINTERNET}" -a "${NOINTERNET}" == 1 ]; then
@@ -391,8 +409,7 @@ else
 	# check if hdiutil supports internet-enable
 	# support was removed in macOS 10.15
 	# https://github.com/andreyvit/create-dmg/issues/76
-	if hdiutil internet-enable -help >/dev/null 2>/dev/null 
-	then
+	if hdiutil internet-enable -help >/dev/null 2>/dev/null; then
 		hdiutil internet-enable -yes "${DMG_DIR}/${DMG_NAME}"
 	else
 		echo "hdiutil does not support internet-enable. Note it was removed in macOS 10.15."

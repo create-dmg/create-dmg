@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
-# Since create-dmg does not override, be sure to delete previous DMG
-test -f Application-Installer.dmg && rm Application-Installer.dmg
+if [[ -e ../../create-dmg ]]; then
+  # We're running from the repo
+  CREATE_DMG=../../create-dmg
+else
+  # We're running from an installation under a prefix
+  CREATE_DMG=../../../../bin/create-dmg
+fi
+
+# Since create-dmg does not clobber, be sure to delete previous DMG
+[[ -f Application-Installer.dmg ]] && rm Application-Installer.dmg
 
 # Create the DMG
-../../create-dmg \
+$CREATE_DMG \
 --volname "Application Installer" \
 --background "installer_background.png" \
 --window-pos 200 120 \
