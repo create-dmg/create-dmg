@@ -99,93 +99,93 @@ EOHELP
 
 while [[ "${1:0:1}" = "-" ]]; do
 	case $1 in
-	--volname)
-		VOLUME_NAME="$2"
-		shift; shift;;
-	--volicon)
-		VOLUME_ICON_FILE="$2"
-		shift; shift;;
-	--background)
-		BACKGROUND_FILE="$2"
-		BACKGROUND_FILE_NAME="$(basename $BACKGROUND_FILE)"
-		BACKGROUND_CLAUSE="set background picture of opts to file \".background:$BACKGROUND_FILE_NAME\""
-		REPOSITION_HIDDEN_FILES_CLAUSE="set position of every item to {theBottomRightX + 100, 100}"
-		shift; shift;;
-	--icon-size)
-		ICON_SIZE="$2"
-		shift; shift;;
-	--text-size)
-		TEXT_SIZE="$2"
-		shift; shift;;
-	--window-pos)
-		WINX=$2; WINY=$3
-		shift; shift; shift;;
-	--window-size)
-		WINW=$2; WINH=$3
-		shift; shift; shift;;
-	--icon)
-		POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
-		"
-		shift; shift; shift; shift;;
-	--hide-extension)
-		HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
-		"
-		shift; shift;;
-	--custom-icon)
-		shift; shift; shift; shift; shift;;
-	-h | --help)
-		usage;;
-	--version)
-		version; exit 0;;
-	--pure-version)
-		pure_version; exit 0;;
-	--ql-drop-link)
-		QL_LINK=$2
-		QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
-		"
-		shift; shift; shift;;
-	--app-drop-link)
-		APPLICATION_LINK=$2
-		APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
-		"
-		shift; shift; shift;;
-	--eula)
-		EULA_RSRC=$2
-		shift; shift;;
-	--no-internet-enable)
-		NOINTERNET=1
-		shift;;
-	--format)
-		FORMAT="$2"
-		shift; shift;;
-	--add-file | --add-folder)
-		ADD_FILE_TARGETS+=("$2")
-		ADD_FILE_SOURCES+=("$3")
-		POSITION_CLAUSE="${POSITION_CLAUSE}
-		set position of item \"$2\" to {$4, $5}
-		"
-		shift; shift; shift; shift; shift;;
-	--disk-image-size)
-		DISK_IMAGE_SIZE="$2"
-		shift; shift;;
-	--hdiutil-verbose)
-		HDIUTIL_VERBOSITY='-verbose'
-		shift;;
-	--hdiutil-quiet)
-		HDIUTIL_VERBOSITY='-quiet'
-		shift;; 
-	--sandbox-safe)
-		SANDBOX_SAFE=1
-		shift;; 
-	--rez)
-		REZ_PATH=$2
-		shift; shift;;
-	--skip-jenkins)
-		SKIP_JENKINS=1
-		shift;;
-	-*)
-		echo "Unknown option: $1. Run 'create-dmg --help' for help."
-		exit 1;;
+		--volname)
+			VOLUME_NAME="$2"
+			shift; shift;;
+		--volicon)
+			VOLUME_ICON_FILE="$2"
+			shift; shift;;
+		--background)
+			BACKGROUND_FILE="$2"
+			BACKGROUND_FILE_NAME="$(basename $BACKGROUND_FILE)"
+			BACKGROUND_CLAUSE="set background picture of opts to file \".background:$BACKGROUND_FILE_NAME\""
+			REPOSITION_HIDDEN_FILES_CLAUSE="set position of every item to {theBottomRightX + 100, 100}"
+			shift; shift;;
+		--icon-size)
+			ICON_SIZE="$2"
+			shift; shift;;
+		--text-size)
+			TEXT_SIZE="$2"
+			shift; shift;;
+		--window-pos)
+			WINX=$2; WINY=$3
+			shift; shift; shift;;
+		--window-size)
+			WINW=$2; WINH=$3
+			shift; shift; shift;;
+		--icon)
+			POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
+			"
+			shift; shift; shift; shift;;
+		--hide-extension)
+			HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
+			"
+			shift; shift;;
+		--custom-icon)
+			shift; shift; shift; shift; shift;;
+		-h | --help)
+			usage;;
+		--version)
+			version; exit 0;;
+		--pure-version)
+			pure_version; exit 0;;
+		--ql-drop-link)
+			QL_LINK=$2
+			QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--app-drop-link)
+			APPLICATION_LINK=$2
+			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--eula)
+			EULA_RSRC=$2
+			shift; shift;;
+		--no-internet-enable)
+			NOINTERNET=1
+			shift;;
+		--format)
+			FORMAT="$2"
+			shift; shift;;
+		--add-file | --add-folder)
+			ADD_FILE_TARGETS+=("$2")
+			ADD_FILE_SOURCES+=("$3")
+			POSITION_CLAUSE="${POSITION_CLAUSE}
+			set position of item \"$2\" to {$4, $5}
+			"
+			shift; shift; shift; shift; shift;;
+		--disk-image-size)
+			DISK_IMAGE_SIZE="$2"
+			shift; shift;;
+		--hdiutil-verbose)
+			HDIUTIL_VERBOSITY='-verbose'
+			shift;;
+		--hdiutil-quiet)
+			HDIUTIL_VERBOSITY='-quiet'
+			shift;; 
+		--sandbox-safe)
+			SANDBOX_SAFE=1
+			shift;; 
+		--rez)
+			REZ_PATH=$2
+			shift; shift;;
+		--skip-jenkins)
+			SKIP_JENKINS=1
+			shift;;
+		-*)
+			echo "Unknown option: $1. Run 'create-dmg --help' for help."
+			exit 1;;
 	esac
 	case $FORMAT in
 	UDZO)
