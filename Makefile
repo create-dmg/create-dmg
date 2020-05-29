@@ -26,7 +26,7 @@ install: create-dmg
 	$(INSTALL) -d $(DESTDIR)$(datadir)/$(PACKAGE_TARNAME)
 	cp -R support $(DESTDIR)$(datadir)/$(PACKAGE_TARNAME)
 	cp -R examples $(DESTDIR)$(datadir)/$(PACKAGE_TARNAME)
-	#cp -R tests $(DESTDIR)$(datadir)/$(PACKAGE_TARNAME)
+	cp -R tests $(DESTDIR)$(datadir)/$(PACKAGE_TARNAME)
 
 uninstall:
 	rm -f $(DESTDIR)$(bindir)/create-dmg
