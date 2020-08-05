@@ -62,8 +62,6 @@ Options:
       set position of the file's icon
   --hide-extension <file_name>
       hide the extension of file
-  --custom-icon <file_name> <custom_icon_or_sample_file> <x> <y>
-      set position and custom icon
   --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
   --ql-drop-link <x> <y>
@@ -131,8 +129,6 @@ while [[ "${1:0:1}" = "-" ]]; do
 			HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
 			"
 			shift; shift;;
-		--custom-icon)
-			shift; shift; shift; shift; shift;;
 		-h | --help)
 			usage;;
 		--version)
