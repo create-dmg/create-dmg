@@ -202,6 +202,13 @@ fi
 DMG_PATH="$1"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 
+# Argument validation checks
+
+if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
+	echo "Output file name must end with a .dmg extension. Run 'create-dmg --help' for help."
+	exit 1
+fi
+
 # Main script logic
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
