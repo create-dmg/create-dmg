@@ -418,15 +418,35 @@ rm -f "${DMG_TEMP_NAME}"
 # Adding EULA resources
 if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	echo "Adding EULA resources..."
-	REZ_ARG=""
-	if [[ -n "${REZ_PATH}" && "${REZ_PATH}" != "-null-" ]]; then
-		REZ_ARG="--rez ${REZ_PATH}"
+	#
+	# Use udifrez instead flatten/rez/unflatten
+	# https://github.com/create-dmg/create-dmg/issues/109
+	#
+	# Based on a thread from dawn2dusk & peterguy
+	# https://developer.apple.com/forums/thread/668084
+	#
+	EULA_RESOURCES_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
+	EULA_FORMAT=$(file -b ${EULA_RSRC})
+	if [[ ${EULA_FORMAT} == 'Rich Text Format data'* ]] ; then
+		EULA_FORMAT='RTF '
 	else
-		xcode_path=$(xcode-select -p)
-		default_rez="$xcode_path/Tools/Rez"
-		REZ_ARG="--rez ${default_rez}"
+		EULA_FORMAT='TEXT'
 	fi
-	"${CDMG_SUPPORT_DIR}/licenseDMG.py" "${DMG_DIR}/${DMG_NAME}" "${EULA_RSRC}" ${REZ_ARG}
+	# Encode the EULA to base64
+	# Replace 'openssl base64' with 'base64' if Mac OS X 10.6 support is no more needed
+	# EULA_DATA="$(base64 -b 52 "${EULA_RSRC}" | sed s$'/^\(.*\)$/\t\t\t\\1/')"
+	EULA_DATA="$(openssl base64 -in "${EULA_RSRC}" | tr -d '\n' | awk '{gsub(/.{52}/,"&\n")}1' | sed s$'/^\(.*\)$/\t\t\t\\1/')"
+	# Fill the template with the custom EULA contents
+	eval "cat > \"${EULA_RESOURCES_FILE}\" <<EOF                                                                                                                  
+	$(<${CDMG_SUPPORT_DIR}/eula-resources-template.xml)
+	EOF
+	"
+	# Apply the resources
+	hdiutil udifrez -xml "${EULA_RESOURCES_FILE}" '' -quiet "${DMG_DIR}/${DMG_NAME}" || {
+		echo "Failed to add the EULA license"
+		exit 1
+	}
+	echo "Successfully added the EULA license"
 fi
 
 # Enable "internet", whatever that is
