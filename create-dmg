@@ -404,6 +404,10 @@ if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	SetFile -a C "$MOUNT_DIR"
 fi
 
+# Delete unnecessary file system events log
+echo "Deleting .fseventsd"
+rm -rf "${MOUNT_DIR}/.fseventsd"
+
 # Unmount
 echo "Unmounting disk image..."
 hdiutil detach "${DEV_NAME}"
