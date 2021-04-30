@@ -24,6 +24,7 @@ IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
 SKIP_JENKINS=0
+MAXIMUM_UNMOUNTING_ATTEMPTS=3
 
 function pure_version() {
 	echo "$CDMG_VERSION"
@@ -405,8 +406,22 @@ if [[ -n "$VOLUME_ICON_FILE" ]]; then
 fi
 
 # Unmount
-echo "Unmounting disk image..."
-hdiutil detach "${DEV_NAME}"
+unmounting_attempts=0
+until
+  echo "Unmounting disk image..."
+  (( unmounting_attempts++ ))
+  hdiutil detach "${DEV_NAME}"
+	exit_code=$?
+	(( exit_code ==  0 )) && break            # nothing goes wrong
+	(( exit_code != 16 )) && exit $exit_code  # exit with the original exit code
+	# The above statement returns 1 if test failed (exit_code == 16).
+	#   It can make the code in the {do... done} block to be executed
+do
+  (( unmounting_attempts == MAXIMUM_UNMOUNTING_ATTEMPTS )) && exit 16  # patience exhausted, exit with code EBUSY
+	echo "Wait a moment..."
+  sleep $(( 1 * (2 ** unmounting_attempts) ))
+done
+unset unmounting_attempts
 
 # Compress image
 echo "Compressing disk image..."
