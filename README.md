@@ -68,6 +68,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--disk-image-size \<x\>:** set the disk image size manually to x MB
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
 - **--hdiutil-quiet:** execute hdiutil in quiet mode
+- **--skip-jenkins:** skip Finder-prettifying AppleScript, usefull in Sandbox and non-GUI environments (workaround for #72)
 - **--sandbox-safe:** execute hdiutil with sandbox compatibility, do not bless and do not execute the cosmetic AppleScript
 - **--version:** show tool version number
 - **-h, --help:** display the help
