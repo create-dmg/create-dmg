@@ -285,7 +285,7 @@ if [[ $SANDBOX_SAFE -eq 1 ]] && [[ ! -z "$DISK_IMAGE_SIZE_CUSTOM" ]] && [[ $DISK
 	DISK_IMAGE_SIZE=$DISK_IMAGE_SIZE_CUSTOM
 fi
 
-# Estimate the additional soruces size
+# Estimate the additional sources size
 if [[ -n "$ADD_FILE_SOURCES" ]]; then
 	for i in "${!ADD_FILE_SOURCES[@]}"; do
 		SOURCE_SIZE=$(get_size "${ADD_FILE_SOURCES[$i]}")
