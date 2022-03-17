@@ -6,8 +6,7 @@ A shell script to build fancy DMGs.
 Status and contribution policy
 ------------------------------
 
-Create-dmg is maintained thanks to the contributors who send pull requests.
-As of May 2020, [Andrew Janke](https://github.com/apjanke) is the primary maintainer, and (since September 2018) [@aonez](https://github.com/aonez) has helped with the maintenance.
+Create-dmg is mostly maintained by [@aonez](https://github.com/aonez) and the contributors who send pull requests.
 The project home page is <https://github.com/create-dmg/create-dmg>.
 
 We will merge any pull request that adds something useful and does not break existing things.
@@ -15,6 +14,7 @@ We will merge any pull request that adds something useful and does not break exi
 If you're an active user and want to be a maintainer, or just want to chat, please ping us on Gitter at [gitter.im/create-dmg/Lobby](https://gitter.im/create-dmg/Lobby), or [email Andrew directly](floss@apjanke.net).
 
 Create-dmg was originally created by [Andrey Tarantsov](https://github.com/andreyvit).
+In May 2020 [Andrew Janke](https://github.com/apjanke) helped vastly with the project.
 
 Installation
 ------------
@@ -68,6 +68,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--disk-image-size \<x\>:** set the disk image size manually to x MB
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
 - **--hdiutil-quiet:** execute hdiutil in quiet mode
+- **--bless:** bless the mount folder (deprecated, needs macOS 12.2.1 or older, #127)
 - **--skip-jenkins:** skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments (workaround for #72)
 - **--sandbox-safe:** execute hdiutil with sandbox compatibility, do not bless and do not execute the cosmetic AppleScript
 - **--version:** show tool version number
