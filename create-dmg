@@ -23,6 +23,7 @@ ADD_FILE_TARGETS=()
 IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
+BLESS=0
 SKIP_JENKINS=0
 MAXIMUM_UNMOUNTING_ATTEMPTS=3
 
@@ -81,6 +82,8 @@ Options:
       execute hdiutil in verbose mode
   --hdiutil-quiet
       execute hdiutil in quiet mode
+  --bless
+      bless the mount folder (deprecated, needs macOS 12.2.1 or older)
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless
   --version
@@ -168,10 +171,13 @@ while [[ "${1:0:1}" = "-" ]]; do
 			shift;;
 		--hdiutil-quiet)
 			HDIUTIL_VERBOSITY='-quiet'
-			shift;; 
+			shift;;
 		--sandbox-safe)
 			SANDBOX_SAFE=1
-			shift;; 
+			shift;;
+		--bless)
+			BLESS=1
+			shift;;
 		--rez)
 			echo "REZ is no more directly used. You can remove the --rez argument."
 			shift; shift;;
@@ -392,7 +398,7 @@ chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions"
 
 # Make the top window open itself on mount:
-if [[ $SANDBOX_SAFE -eq 0 ]]; then
+if [[ $BLESS -eq 1 && $SANDBOX_SAFE -eq 0 ]]; then
 	echo "Blessing started"
 	bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
 	echo "Blessing finished"
