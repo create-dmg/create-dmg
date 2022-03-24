@@ -193,6 +193,10 @@ while [[ "${1:0:1}" = "-" ]]; do
 			IMAGEKEY="-imagekey zlib-level=9";;
 		UDBZ)
 			IMAGEKEY="-imagekey bzip2-level=9";;
+		ULFO)
+			;;
+		ULMO)
+			;;
 		*)
 			echo >&2 "Unknown format: $FORMAT"
 			exit 1;;
