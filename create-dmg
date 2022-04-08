@@ -85,7 +85,7 @@ Options:
       execute hdiutil in quiet mode
   --bless
       bless the mount folder (deprecated, needs macOS 12.2.1 or older)
-  --codesign-signature
+  --codesign <signature>
       codesign the final disk image with the specified signature
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless
@@ -175,7 +175,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--hdiutil-quiet)
 			HDIUTIL_VERBOSITY='-quiet'
 			shift;;
-		--codesign-signature)
+		--codesign)
 			SIGNATURE="$2"
 			shift; shift;;
 		--sandbox-safe)
