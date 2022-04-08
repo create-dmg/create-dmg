@@ -69,7 +69,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
 - **--hdiutil-quiet:** execute hdiutil in quiet mode
 - **--bless:** bless the mount folder (deprecated, needs macOS 12.2.1 or older, [#127](https://github.com/create-dmg/create-dmg/pull/127))
-- **--codesign \<signature\>:** codesign the final disk image with the specified signature
+- **--codesign \<signature\>:** codesign the disk image with the specified signature
 - **--skip-jenkins:** skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments, [#72](https://github.com/create-dmg/create-dmg/pull/72)
 - **--sandbox-safe:** hdiutil with sandbox compatibility, do not bless and do not execute the cosmetic AppleScript
 - **--version:** show tool version number

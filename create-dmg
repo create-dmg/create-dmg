@@ -86,7 +86,7 @@ Options:
   --bless
       bless the mount folder (deprecated, needs macOS 12.2.1 or older)
   --codesign <signature>
-      codesign the final disk image with the specified signature
+      codesign the disk image with the specified signature
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless
   --version
@@ -500,7 +500,7 @@ if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
 	codesign -s "${SIGNATURE}" "${DMG_DIR}/${DMG_NAME}"
 	dmgsignaturecheck="$(codesign --verify --deep --verbose=2 --strict "${DMG_DIR}/${DMG_NAME}" 2>&1 >/dev/null)"
 	if [ $? -eq 0 ]; then
-		echo "The image is now codesigned"
+		echo "The disk image is now codesigned"
 	else
 		echo "The signature seems invalid${NC}"
 		exit 1
