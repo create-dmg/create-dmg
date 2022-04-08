@@ -27,6 +27,7 @@ BLESS=0
 SKIP_JENKINS=0
 MAXIMUM_UNMOUNTING_ATTEMPTS=3
 SIGNATURE=""
+NOTARIZE=""
 
 function pure_version() {
 	echo "$CDMG_VERSION"
@@ -87,6 +88,8 @@ Options:
       bless the mount folder (deprecated, needs macOS 12.2.1 or older)
   --codesign <signature>
       codesign the disk image with the specified signature
+  --notarize <credentials>
+      notarize the disk image (waits and staples) with the keychain stored credentials
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless
   --version
@@ -177,6 +180,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 			shift;;
 		--codesign)
 			SIGNATURE="$2"
+			shift; shift;;
+		--notarize)
+			NOTARIZE="$2"
 			shift; shift;;
 		--sandbox-safe)
 			SANDBOX_SAFE=1
@@ -503,6 +509,20 @@ if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
 		echo "The disk image is now codesigned"
 	else
 		echo "The signature seems invalid${NC}"
+		exit 1
+	fi
+fi
+
+if [[ -n "${NOTARIZE}" && "${NOTARIZE}" != "-null-" ]]; then
+	echo "Notarization started"	
+	xcrun notarytool submit "${DMG_DIR}/${DMG_NAME}" --keychain-profile "${NOTARIZE}" --wait
+	echo "Stapling the notarization ticket"
+	staple="$(xcrun stapler staple "${DMG_DIR}/${DMG_NAME}")"
+	if [ $? -eq 0 ]; then
+		echo "The disk image is now notarized"
+	else
+		echo "$staple"
+		echo "The notarization failed with error $?"
 		exit 1
 	fi
 fi
