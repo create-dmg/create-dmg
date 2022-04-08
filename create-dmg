@@ -73,7 +73,7 @@ Options:
   --no-internet-enable
       disable automatic mount & copy
   --format <format>
-      specify the final image format (default is UDZO)
+      specify the final disk image format (UDZO|UDBZ|ULFO|ULMO) (default is UDZO)
   --add-file <target_name> <file>|<folder> <x> <y>
       add additional file or folder (can be used multiple times)
   --disk-image-size <x>
@@ -198,7 +198,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 		ULMO)
 			;;
 		*)
-			echo >&2 "Unknown format: $FORMAT"
+			echo >&2 "Unknown disk image format: $FORMAT"
 			exit 1;;
 	esac
 done

@@ -63,7 +63,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--eula \<eula_file\>:** attach a license file to the dmg
 - **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
 - **--no-internet-enable:** disable automatic mount&copy
-- **--format:** specify the final image format (default is UDZO)
+- **--format:** specify the final image format (UDZO|UDBZ|ULFO|ULMO) (default is UDZO) 
 - **--add-file \<target_name\> \<file|folder\> \<x\> \<y\>:** add additional file or folder (can be used multiple times)
 - **--disk-image-size \<x\>:** set the disk image size manually to x MB
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
