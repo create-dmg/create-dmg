@@ -416,11 +416,11 @@ echo "Done fixing permissions"
 # Make the top window open itself on mount:
 if [[ $BLESS -eq 1 && $SANDBOX_SAFE -eq 0 ]]; then
 	echo "Blessing started"
-    if [ $(uname -m) == "arm64" ]; then
-        bless --folder "${MOUNT_DIR}"
-    else
-        bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
-    fi
+	if [ $(uname -m) == "arm64" ]; then
+		bless --folder "${MOUNT_DIR}"
+	else
+		bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
+	fi
 	echo "Blessing finished"
 else
 	echo "Skipping blessing on sandbox"
