@@ -451,7 +451,7 @@ fi
 echo "Deleting .fseventsd"
 rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
-hdiutil-detach-retry "${DEV_NAME}"
+hdiutil_detach_retry "${DEV_NAME}"
 
 # Compress image
 echo "Compressing disk image..."
