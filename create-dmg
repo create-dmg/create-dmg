@@ -355,7 +355,7 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 if [[ -d "${MOUNT_DIR}" ]]; then
 	echo "Unmounting old disk image from $MOUNT_DIR..."
 	DEV_NAME=$(hdiutil info | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
-	hdiutil-detach-retry "${DEV_NAME}"
+	hdiutil_detach_retry "${DEV_NAME}"
 fi
 
 echo "Mounting disk image..."
