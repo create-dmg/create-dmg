@@ -33,7 +33,7 @@ function pure_version() {
 	echo "$CDMG_VERSION"
 }
 
-function hdiutil-detach-retry() {
+function hdiutil_detach_retry() {
 	# Unmount
 	unmounting_attempts=0
 	until
