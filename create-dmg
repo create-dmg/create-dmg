@@ -419,7 +419,7 @@ else
 			true
 		else
 			echo >&2 "Failed running AppleScript"
-			hdiutil-detach-retry "${DEV_NAME}"
+			hdiutil_detach_retry "${DEV_NAME}"
 			exit 64
 		fi
 		echo "Done running the AppleScript..."
