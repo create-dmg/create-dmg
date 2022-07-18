@@ -280,7 +280,7 @@ function blocks_to_megabytes() {
 
 function get_size() {
 	# Get block size in disk
-	bytes_size=$(du -s "$1" | sed -e 's/	.*//g')
+	bytes_size=$(du -B 512 -s "$1" | sed -e 's/	.*//g')
 	echo $(blocks_to_megabytes $bytes_size)
 }
 
