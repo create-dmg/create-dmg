@@ -283,7 +283,12 @@ function blocks_to_megabytes() {
 
 function get_size() {
 	# Get block size in disk
-	bytes_size=$(du -s "$1" | sed -e 's/	.*//g')
+	if [[ $OS_MAJOR_VERSION -ge 12 ]]; then
+		bytes_size=$(du -B 512 -s "$1")
+	else
+		bytes_size=$(du -s "$1")
+	fi
+	bytes_size=$(echo $bytes_size | sed -e 's/	.*//g')
 	echo $(blocks_to_megabytes $bytes_size)
 }
 
