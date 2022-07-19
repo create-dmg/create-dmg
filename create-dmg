@@ -5,7 +5,7 @@
 # Bail out on any unhandled errors
 set -e;
 
-CDMG_VERSION='1.1.0'
+CDMG_VERSION='1.1.1'
 
 # The full path to the "support/" directory this script is using
 # (This will be set up by code later in the script.)
