@@ -11,9 +11,9 @@ CDMG_VERSION='1.1.1'
 # (This will be set up by code later in the script.)
 CDMG_SUPPORT_DIR=""
 
-MAC_FULL_VERSION="$(sw_vers | sed -n 2p | cut -d : -f 2 | tr -d '[:space:]' | cut -c1-)"
-MAC_MAJOR_VERSION="$(echo $MAC_FULL_VERSION | cut -d . -f 1)"
-MAC_MINOR_VERSION="$(echo $MAC_FULL_VERSION | cut -d . -f 2)"
+OS_FULL_VERSION="$(sw_vers | sed -n 2p | cut -d : -f 2 | tr -d '[:space:]' | cut -c1-)"
+OS_MAJOR_VERSION="$(echo $OS_FULL_VERSION | cut -d . -f 1)"
+OS_MINOR_VERSION="$(echo $OS_FULL_VERSION | cut -d . -f 2)"
 WINX=10
 WINY=60
 WINW=500
