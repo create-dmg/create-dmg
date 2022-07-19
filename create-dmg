@@ -36,6 +36,26 @@ function pure_version() {
 	echo "$CDMG_VERSION"
 }
 
+function hdiutil_detach_retry() {
+	# Unmount
+	unmounting_attempts=0
+	until
+		echo "Unmounting disk image..."
+		(( unmounting_attempts++ ))
+		hdiutil detach "$1"
+		exit_code=$?
+		(( exit_code ==  0 )) && break            # nothing goes wrong
+		(( exit_code != 16 )) && exit $exit_code  # exit with the original exit code
+		# The above statement returns 1 if test failed (exit_code == 16).
+		#   It can make the code in the {do... done} block to be executed
+	do
+		(( unmounting_attempts == MAXIMUM_UNMOUNTING_ATTEMPTS )) && exit 16  # patience exhausted, exit with code EBUSY
+		echo "Wait a moment..."
+		sleep $(( 1 * (2 ** unmounting_attempts) ))
+	done
+	unset unmounting_attempts
+}
+
 function version() {
 	echo "create-dmg $(pure_version)"
 }
@@ -343,7 +363,7 @@ MOUNT_DIR="/Volumes/${VOLUME_NAME}"
 if [[ -d "${MOUNT_DIR}" ]]; then
 	echo "Unmounting old disk image from $MOUNT_DIR..."
 	DEV_NAME=$(hdiutil info | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
-	hdiutil detach "${DEV_NAME}"
+	hdiutil_detach_retry "${DEV_NAME}"
 fi
 
 echo "Mounting disk image..."
@@ -407,7 +427,7 @@ else
 			true
 		else
 			echo >&2 "Failed running AppleScript"
-			hdiutil detach "${DEV_NAME}"
+			hdiutil_detach_retry "${DEV_NAME}"
 			exit 64
 		fi
 		echo "Done running the AppleScript..."
@@ -443,23 +463,7 @@ fi
 echo "Deleting .fseventsd"
 rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
-# Unmount
-unmounting_attempts=0
-until
-  echo "Unmounting disk image..."
-  (( unmounting_attempts++ ))
-  hdiutil detach "${DEV_NAME}"
-	exit_code=$?
-	(( exit_code ==  0 )) && break            # nothing goes wrong
-	(( exit_code != 16 )) && exit $exit_code  # exit with the original exit code
-	# The above statement returns 1 if test failed (exit_code == 16).
-	#   It can make the code in the {do... done} block to be executed
-do
-  (( unmounting_attempts == MAXIMUM_UNMOUNTING_ATTEMPTS )) && exit 16  # patience exhausted, exit with code EBUSY
-	echo "Wait a moment..."
-  sleep $(( 1 * (2 ** unmounting_attempts) ))
-done
-unset unmounting_attempts
+hdiutil_detach_retry "${DEV_NAME}"
 
 # Compress image
 echo "Compressing disk image..."
