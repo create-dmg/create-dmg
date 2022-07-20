@@ -4,6 +4,8 @@
 
 # Bail out on any unhandled errors
 set -e;
+# Any command that exits with non-zero code will cause the pipeline to fail
+set -o pipefail;
 
 CDMG_VERSION='1.1.1'
 
