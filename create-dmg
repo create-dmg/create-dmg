@@ -23,6 +23,7 @@ WINH=350
 ICON_SIZE=128
 TEXT_SIZE=16
 FORMAT="UDZO"
+FILESYSTEM="HFS+"
 ADD_FILE_SOURCES=()
 ADD_FILE_TARGETS=()
 IMAGEKEY=""
@@ -101,6 +102,8 @@ Options:
       disable automatic mount & copy
   --format <format>
       specify the final disk image format (UDZO|UDBZ|ULFO|ULMO) (default is UDZO)
+  --filesystem <filesystem>
+      specify the disk image filesystem (HFS+|APFS) (default is HFS+, APFS supports macOS 10.13 or newer)
   --add-file <target_name> <file>|<folder> <x> <y>
       add additional file or folder (can be used multiple times)
   --disk-image-size <x>
@@ -116,7 +119,7 @@ Options:
   --notarize <credentials>
       notarize the disk image (waits and staples) with the keychain stored credentials
   --sandbox-safe
-      execute hdiutil with sandbox compatibility and do not bless
+      execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --version
 	    show create-dmg version number
   -h, --help
@@ -187,6 +190,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--format)
 			FORMAT="$2"
 			shift; shift;;
+		--filesystem)
+			FILESYSTEM="$2"
+			shift; shift;;
 		--add-file | --add-folder)
 			ADD_FILE_TARGETS+=("$2")
 			ADD_FILE_SOURCES+=("$3")
@@ -252,6 +258,16 @@ SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 
 if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
 	echo "Output file name must end with a .dmg extension. Run 'create-dmg --help' for help."
+	exit 1
+fi
+
+if [[ "${FILESYSTEM}" != "HFS+" ]] && [[ "${FILESYSTEM}" != "APFS" ]]; then
+	echo "Unknown disk image filesystem: ${FILESYSTEM}. Run 'create-dmg --help' for help."
+	exit 1
+fi
+
+if [[ "${FILESYSTEM}" == "APFS" ]] && [[ ${SANDBOX_SAFE} -eq 1 ]]; then
+	echo "Creating an APFS disk image that is sandbox safe is not supported."
 	exit 1
 fi
 
@@ -321,9 +337,14 @@ if [[ -n "$DISK_IMAGE_SIZE" ]]; then
 fi
 
 if [[ $SANDBOX_SAFE -eq 0 ]]; then
+	if [[ "$FILESYSTEM" == "APFS" ]]; then
+		FILESYSTEM_ARGUMENTS=""
+	else
+		FILESYSTEM_ARGUMENTS="-c c=64,a=16,e=16"
+	fi
 	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
-		-fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
-else	
+		-fs "${FILESYSTEM}" -fsargs "${FILESYSTEM_ARGUMENTS}" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
+else
 	hdiutil makehybrid ${HDIUTIL_VERBOSITY} -default-volume-name "${VOLUME_NAME}" -hfs -o "${DMG_TEMP_NAME}" "$SRC_FOLDER"
 	hdiutil convert -format UDRW -ov -o "${DMG_TEMP_NAME}" "${DMG_TEMP_NAME}"
 	DISK_IMAGE_SIZE_CUSTOM=$DISK_IMAGE_SIZE
