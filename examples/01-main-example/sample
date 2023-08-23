@@ -13,7 +13,7 @@ else
 fi
 
 # Since create-dmg does not clobber, be sure to delete previous DMG
-[[ -f "${DMG_FILE_NAME}" ]] && rm ${DMG_FILE_NAME}
+[[ -f "${DMG_FILE_NAME}" ]] && rm "${DMG_FILE_NAME}"
 
 # Create the DMG
 $CREATE_DMG \
