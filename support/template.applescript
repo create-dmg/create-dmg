@@ -39,6 +39,10 @@ on run (volumeName)
 			APPLICATION_CLAUSE
 			QL_CLAUSE
 			HAL_CLAUSE
+			AU_CLAUSE
+			VST_CLAUSE
+			VST3_CLAUSE
+			CLAP_CLAUSE
 			close
 			open
 			-- Force saving of the size
