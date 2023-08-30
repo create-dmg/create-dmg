@@ -38,6 +38,7 @@ on run (volumeName)
 			-- Application and QL Link Clauses
 			APPLICATION_CLAUSE
 			QL_CLAUSE
+			HAL_CLAUSE
 			close
 			open
 			-- Force saving of the size
