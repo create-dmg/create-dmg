@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-DMG_FILE_NAME=Application-Installer.dmg
 APP_NAME="Application"
-PATH_TO_PARENT_OF_APP="source_folder/"
+DMG_FILE_NAME="${APP_NAME}-Installer.dmg"
+VOLUME_NAME="${APP_NAME} Installer"
+SOURCE_FOLDER_PATH="source_folder/"
 
 if [[ -e ../../create-dmg ]]; then
   # We're running from the repo
@@ -17,7 +18,7 @@ fi
 
 # Create the DMG
 $CREATE_DMG \
-  --volname "${APP_NAME} Installer" \
+  --volname "${VOLUME_NAME}" \
   --background "installer_background.png" \
   --window-pos 200 120 \
   --window-size 800 400 \
@@ -26,4 +27,4 @@ $CREATE_DMG \
   --hide-extension "${APP_NAME}.app" \
   --app-drop-link 600 185 \
   "${DMG_FILE_NAME}" \
-  "${PATH_TO_PARENT_OF_APP}"
+  "${SOURCE_FOLDER_PATH}"
