@@ -96,6 +96,8 @@ Options:
       make a drop link to Applications, at location x,y
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
+  --hal-drop-link <x> <y>
+      make a drop link to system HAL audio devices dir, at location x,y
   --eula <eula_file>
       attach a license file to the dmg (plain text or RTF)
   --no-internet-enable
@@ -174,6 +176,11 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--ql-drop-link)
 			QL_LINK=$2
 			QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--hal-drop-link)
+			HAL_LINK=$2
+			HAL_CLAUSE="set position of item \"HAL\" to {$2, $3}
 			"
 			shift; shift; shift;;
 		--app-drop-link)
@@ -413,6 +420,12 @@ if [[ -n "$QL_LINK" ]]; then
 	ln -s "/Library/QuickLook" "$MOUNT_DIR/QuickLook"
 fi
 
+if [[ -n "$HAL_LINK" ]]; then
+	echo "Making link to HAL dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/HAL" "$MOUNT_DIR/HAL"
+fi
+
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
@@ -440,6 +453,7 @@ else
 					-e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
 			| perl -pe "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" \
 			| perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" \
+			| perl -pe "s/HAL_CLAUSE/$HAL_CLAUSE/g" \
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
 			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
 			> "$APPLESCRIPT_FILE"
