@@ -43,6 +43,7 @@ on run (volumeName)
 			VST_CLAUSE
 			VST3_CLAUSE
 			CLAP_CLAUSE
+			CUSTOM_CLAUSE
 			close
 			open
 			-- Force saving of the size
