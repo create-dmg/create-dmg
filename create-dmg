@@ -106,6 +106,8 @@ Options:
       make a drop link to system VST3 plugin dir, at location x,y
   --clap-drop-link <x> <y>
       make a drop link to system CLAP plugin dir, at location x,y
+  --custom-path-link <path> <display-name> <x> <y>
+      make a drop link to a specified directory with a custom display name, at location x,y
   --eula <eula_file>
       attach a license file to the dmg (plain text or RTF)
   --no-internet-enable
@@ -216,6 +218,12 @@ while [[ "${1:0:1}" = "-" ]]; do
 			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
 			"
 			shift; shift; shift;;
+		--custom-path-link)
+			CUSTOM_LINK=("$2")
+			CUSTOM_DISPLAY=("$3")
+			CUSTOM_CLAUSE="set position of item \"$CUSTOM_DISPLAY\" to {$4, $5}
+			"
+			shift; shift; shift; shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -478,6 +486,21 @@ if [[ -n "$CLAP_LINK" ]]; then
 	ln -s "/Library/Audio/Plug-Ins/CLAP" "$MOUNT_DIR/CLAP"
 fi
 
+if [[ -n "$CUSTOM_LINK" ]]; then
+	echo "Attempting to create custom link..."
+	echo $MOUNT_DIR
+	if [ -d "$CUSTOM_LINK" ]; then
+  	ln -s "$CUSTOM_LINK" "$MOUNT_DIR/$CUSTOM_DISPLAY"
+	echo "Custom link created successfully."
+	echo "Custom link display name: $CUSTOM_DISPLAY"
+	echo "Custom link target folder path: $CUSTOM_LINK"		
+	else
+	echo "Custom link directory does not exist."
+	echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
+	fi
+	
+fi
+
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
@@ -510,6 +533,7 @@ else
 			| perl -pe "s/VST_CLAUSE/$VST_CLAUSE/g" \
 			| perl -pe "s/VST3_CLAUSE/$VST3_CLAUSE/g" \
 			| perl -pe "s/CLAP_CLAUSE/$CLAP_CLAUSE/g" \
+			| perl -pe "s/CUSTOM_CLAUSE/$CUSTOM_CLAUSE/g" \
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
 			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
 			> "$APPLESCRIPT_FILE"
