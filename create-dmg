@@ -277,7 +277,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DMG_DIRNAME="$(dirname "$DMG_PATH")"
 DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
-DMG_TEMP_NAME="$DMG_DIR/rw.${DMG_NAME}"
+DMG_TEMP_NAME="$DMG_DIR/rw.$$.${DMG_NAME}"
 
 # Detect where we're running from
 
@@ -380,20 +380,12 @@ hdiutil resize ${HDIUTIL_VERBOSITY} -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # Mount the new DMG
 
-MOUNT_DIR="/Volumes/${VOLUME_NAME}"
-
-# Unmount leftover dmg if it was mounted previously (e.g. developer mounted dmg, installed app and forgot to unmount it)
-if [[ -d "${MOUNT_DIR}" ]]; then
-	echo "Unmounting old disk image from $MOUNT_DIR..."
-	DEV_NAME=$(hdiutil info | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
-	hdiutil_detach_retry "${DEV_NAME}"
-fi
-
 echo "Mounting disk image..."
 
-echo "Mount directory: $MOUNT_DIR"
-DEV_NAME=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach -mountrandom /Volumes -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
+MOUNT_DIR=$(hdiutil info | grep -E --color=never "${DEV_NAME}s"|head -1|awk '{print $3}')
+echo "Mount dir:       $MOUNT_DIR"
 
 if [[ -n "$BACKGROUND_FILE" ]]; then
 	echo "Copying background file '$BACKGROUND_FILE'..."
@@ -426,6 +418,8 @@ if [[ -n "$ADD_FILE_SOURCES" ]]; then
 		cp -a "${ADD_FILE_SOURCES[$i]}" "$MOUNT_DIR/${ADD_FILE_TARGETS[$i]}"
 	done
 fi
+
+VOLUME_NAME=$(basename $MOUNT_DIR)
 
 # Run AppleScript to do all the Finder cosmetic stuff
 APPLESCRIPT_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
