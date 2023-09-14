@@ -129,6 +129,25 @@ EOHELP
 	exit 0
 }
 
+# factors can cause interstitial disk images to contain more than a single
+# partition - expand the hunt for the temporary disk image by checking for
+# the path of the volume, versus assuming its the first result (as in pr/152).
+function find_mount_dir() {
+	local dev_name="${1}"
+
+	>&2 echo "Searching for mounted interstitial disk image using ${dev_name}... "
+	# enumerate up to 9 partitions
+	for i in {1..9}; do
+		# attempt to find the partition
+		local found_dir
+		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}')
+		if [[ -n "${found_dir}" ]]; then
+				echo "${found_dir}"
+				return 0
+		fi
+	done
+}
+
 # Argument parsing
 
 while [[ "${1:0:1}" = "-" ]]; do
@@ -384,7 +403,14 @@ echo "Mounting disk image..."
 
 DEV_NAME=$(hdiutil attach -mountrandom /Volumes -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
-MOUNT_DIR=$(hdiutil info | grep -E --color=never "${DEV_NAME}s"|head -1|awk '{print $3}')
+MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
+
+if [[ -z "${MOUNT_DIR}" ]]; then
+  >&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
+  >&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
+  exit 1
+fi
+
 echo "Mount dir:       $MOUNT_DIR"
 
 if [[ -n "$BACKGROUND_FILE" ]]; then
