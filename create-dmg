@@ -104,6 +104,10 @@ Options:
       specify the final disk image format (UDZO|UDBZ|ULFO|ULMO) (default is UDZO)
   --filesystem <filesystem>
       specify the disk image filesystem (HFS+|APFS) (default is HFS+, APFS supports macOS 10.13 or newer)
+  --encrypt
+      enable encryption for the resulting disk image (AES-256 - you will be prompted for password)
+  --encrypt-aes128
+      enable encryption for the resulting disk image (AES-128 - you will be prompted for password)
   --add-file <target_name> <file>|<folder> <x> <y>
       add additional file or folder (can be used multiple times)
   --disk-image-size <x>
@@ -212,6 +216,14 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--filesystem)
 			FILESYSTEM="$2"
 			shift; shift;;
+		--encrypt)
+			ENABLE_ENCRYPTION=1
+			AESBITS=256
+			shift;;
+		--encrypt-aes128)
+			ENABLE_ENCRYPTION=1
+			AESBITS=128
+			shift;;
 		--add-file | --add-folder)
 			ADD_FILE_TARGETS+=("$2")
 			ADD_FILE_SOURCES+=("$3")
@@ -508,9 +520,15 @@ rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
 hdiutil_detach_retry "${DEV_NAME}"
 
-# Compress image
-echo "Compressing disk image..."
-hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
+# Compress image and optionally encrypt
+if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
+	echo "Compressing disk image..."
+	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
+else
+	echo "Compressing and encrypting disk image..."
+	echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
+	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
+fi
 rm -f "${DMG_TEMP_NAME}"
 
 # Adding EULA resources
