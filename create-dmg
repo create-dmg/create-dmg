@@ -413,7 +413,7 @@ hdiutil resize ${HDIUTIL_VERBOSITY} -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 echo "Mounting disk image..."
 
-DEV_NAME=$(hdiutil attach -mountrandom /Volumes -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
+DEV_NAME=$(hdiutil attach -mountrandom /tmp -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
 
