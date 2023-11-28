@@ -251,12 +251,6 @@ while [[ "${1:0:1}" = "-" ]]; do
 			CUSTOM_CLAUSE="set position of item \"$CUSTOM_DISPLAY_TARGETS\" to {$4, $5}
 			"
 			shift; shift; shift; shift; shift;;
-		--skip-drop-link-check)
-			SKIP_DROP_LINK_CHECK="true"
-			shift; shift;;
-		--make-absent-link-folder)
-			MAKE_ABSENT_FOLDER="true"
-			shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -530,39 +524,15 @@ if [[ -n "$CLAP_LINK" ]]; then
 	ln -s "/Library/Audio/Plug-Ins/CLAP" "$MOUNT_DIR/CLAP"
 fi
 
-if [[ -n "$CUSTOM_LINK_TARGETS" ]]; then
-	echo "Attempting to create custom link..."
+for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
+	echo "Making custom link to "${!CUSTOM_LINK_TARGETS[i]}" dir..."
 	echo $MOUNT_DIR
-	if [[$SKIP_DROP_LINK_CHECK == "true"]]; then
-		for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
-			echo "Custom drop link verification check skipped..."
-  			ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
-			echo "Custom link created successfully."
-			echo "Custom link display name: "${!CUSTOM_DISPLAY_TARGETS[i]}""
-			echo "Custom link target folder path: "${!CUSTOM_LINK_TARGETS[i]}""		
-		done
-	else
-		for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
-			if [ -d "${!CUSTOM_LINK_TARGETS[i]}" ]; then
-  			ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
-			echo "Custom link created successfully."
-			echo "Custom link display name: "${!CUSTOM_DISPLAY_TARGETS[i]}""
-			echo "Custom link target folder path: "${!CUSTOM_LINK_TARGETS[i]}""		
-			else
-				if [[$MAKE_ABSENT_FOLDER == "true"]]; then
-				echo "Custom link directory does not exist."
-				echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
-				echo "Attempting to create folder at requested source location..."
-				mkdir "${!CUSTOM_LINK_TARGETS[i]}"
-				else
-				echo "Custom link directory does not exist."
-				echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
-				echo "Custom drop link creation failed."
-				fi
-			fi
-		done	
-	fi	
-fi
+	if [ ! -d "${!CUSTOM_LINK_TARGETS[i]}" ]; then
+		echo "Creating the target to the custom link..."
+		mkdir "${!CUSTOM_LINK_TARGETS[i]}"
+	fi
+	ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
+done
 
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
