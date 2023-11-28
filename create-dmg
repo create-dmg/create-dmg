@@ -94,6 +94,12 @@ Options:
       hide the extension of file
   --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
+  --add-drop-link <path> <display-name> <x> <y>
+      make a drop link to a specified directory with a custom display name, at location x,y
+  --skip-drop-link-check
+  	  skip custom drop link verification check
+  --make-absent-link-folder
+	  attempt to make folder at custom drop link source location if verification check fails (does not work with --skip-drop-link-check)
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
   --hal-drop-link <x> <y>
@@ -106,8 +112,6 @@ Options:
       make a drop link to system VST3 plugin dir, at location x,y
   --clap-drop-link <x> <y>
       make a drop link to system CLAP plugin dir, at location x,y
-  --custom-path-link <path> <display-name> <x> <y>
-      make a drop link to a specified directory with a custom display name, at location x,y
   --eula <eula_file>
       attach a license file to the dmg (plain text or RTF)
   --no-internet-enable
@@ -241,12 +245,18 @@ while [[ "${1:0:1}" = "-" ]]; do
 			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
 			"
 			shift; shift; shift;;
-		--custom-path-link)
-			CUSTOM_LINK=("$2")
-			CUSTOM_DISPLAY=("$3")
-			CUSTOM_CLAUSE="set position of item \"$CUSTOM_DISPLAY\" to {$4, $5}
+		--add-drop-link)
+			CUSTOM_LINK_TARGETS+=("$2")
+			CUSTOM_DISPLAY_TARGETS+=("$3")
+			CUSTOM_CLAUSE="set position of item \"$CUSTOM_DISPLAY_TARGETS\" to {$4, $5}
 			"
 			shift; shift; shift; shift; shift;;
+		--skip-drop-link-check)
+			SKIP_DROP_LINK_CHECK="true"
+			shift; shift;;
+		--make-absent-link-folder)
+			MAKE_ABSENT_FOLDER="true"
+			shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -520,19 +530,38 @@ if [[ -n "$CLAP_LINK" ]]; then
 	ln -s "/Library/Audio/Plug-Ins/CLAP" "$MOUNT_DIR/CLAP"
 fi
 
-if [[ -n "$CUSTOM_LINK" ]]; then
+if [[ -n "$CUSTOM_LINK_TARGETS" ]]; then
 	echo "Attempting to create custom link..."
 	echo $MOUNT_DIR
-	if [ -d "$CUSTOM_LINK" ]; then
-  	ln -s "$CUSTOM_LINK" "$MOUNT_DIR/$CUSTOM_DISPLAY"
-	echo "Custom link created successfully."
-	echo "Custom link display name: $CUSTOM_DISPLAY"
-	echo "Custom link target folder path: $CUSTOM_LINK"		
+	if [[$SKIP_DROP_LINK_CHECK == "true"]]; then
+		for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
+			echo "Custom drop link verification check skipped..."
+  			ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
+			echo "Custom link created successfully."
+			echo "Custom link display name: "${!CUSTOM_DISPLAY_TARGETS[i]}""
+			echo "Custom link target folder path: "${!CUSTOM_LINK_TARGETS[i]}""		
+		done
 	else
-	echo "Custom link directory does not exist."
-	echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
-	fi
-	
+		for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
+			if [ -d "${!CUSTOM_LINK_TARGETS[i]}" ]; then
+  			ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
+			echo "Custom link created successfully."
+			echo "Custom link display name: "${!CUSTOM_DISPLAY_TARGETS[i]}""
+			echo "Custom link target folder path: "${!CUSTOM_LINK_TARGETS[i]}""		
+			else
+				if [[$MAKE_ABSENT_FOLDER == "true"]]; then
+				echo "Custom link directory does not exist."
+				echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
+				echo "Attempting to create folder at requested source location..."
+				mkdir "${!CUSTOM_LINK_TARGETS[i]}"
+				else
+				echo "Custom link directory does not exist."
+				echo "If the intended path has spaces in it, try using double quotation marks when defining the argument."
+				echo "Custom drop link creation failed."
+				fi
+			fi
+		done	
+	fi	
 fi
 
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
