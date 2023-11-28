@@ -96,10 +96,6 @@ Options:
       make a drop link to Applications, at location x,y
   --add-drop-link <path> <display-name> <x> <y>
       make a drop link to a specified directory with a custom display name, at location x,y
-  --skip-drop-link-check
-  	  skip custom drop link verification check
-  --make-absent-link-folder
-	  attempt to make folder at custom drop link source location if verification check fails (does not work with --skip-drop-link-check)
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
   --hal-drop-link <x> <y>
