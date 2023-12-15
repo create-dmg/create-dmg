@@ -117,7 +117,7 @@ We'd like to keep it working in as many versions as possible, but unfortunately,
 
 But if you find a bug in an older version, go ahead and report it! We'll try to work with you to get it fixed.
 
-If you're running OS X 10.5 or later, you're SOL. That's just too hard to deal with in 2023. ;)
+If you're running OS X 10.5 or earlier, you're SOL. That's just too hard to deal with in 2023. ;)
 
 Alternatives
 ------------
