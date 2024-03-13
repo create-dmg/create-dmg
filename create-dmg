@@ -146,7 +146,7 @@ function find_mount_dir() {
 		local found_dir
 		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}')
 		if [[ -n "${found_dir}" ]]; then
-				echo "${found_dir}"
+				echo "$(echo $found_dir | xargs)"
 				return 0
 		fi
 	done
