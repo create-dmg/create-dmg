@@ -144,7 +144,7 @@ function find_mount_dir() {
 	for i in {1..9}; do
 		# attempt to find the partition
 		local found_dir
-		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}')
+		found_dir=$(hdiutil info | grep -E --color=never "${dev_name}" | head -${i} | awk '{print $3}' | xargs)
 		if [[ -n "${found_dir}" ]]; then
 				echo "${found_dir}"
 				return 0
