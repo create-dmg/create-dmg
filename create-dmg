@@ -417,10 +417,18 @@ MOUNT_RANDOM_PATH="/Volumes"
 if [[ $SANDBOX_SAFE -eq 1 ]]; then
 	MOUNT_RANDOM_PATH="/tmp"
 fi
-DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | sed 1q | awk '{print $1}')
+if [[ "$FILESYSTEM" == "APFS" ]]; then
+  HDIUTIL_FILTER="tail -n 1"
+else
+  HDIUTIL_FILTER="sed 1q"
+fi
+DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | ${HDIUTIL_FILTER} | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
-MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
-
+if [[ "$FILESYSTEM" == "APFS" ]]; then
+  MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
+else
+	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
+fi
 if [[ -z "${MOUNT_DIR}" ]]; then
   >&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
   >&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
