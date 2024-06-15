@@ -124,6 +124,8 @@ Options:
       notarize the disk image (waits and staples) with the keychain stored credentials
   --sandbox-safe
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
+  --skip-jenkins
+      skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
   --version
 	    show create-dmg version number
   -h, --help
