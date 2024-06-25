@@ -508,7 +508,9 @@ else
 		sleep 4
 		rm "$APPLESCRIPT_FILE"
 	else
-		echo "Will skip running AppleScript to configure DMG aesthetics because of --skip-jenkins option..."
+		echo "Will skip running AppleScript to configure DMG aesthetics because of --skip-jenkins option."
+		echo "This will result in a DMG without any custom background or icons positioning."
+		echo "More info at https://github.com/create-dmg/create-dmg/issues/72"
 	fi
 fi
 
