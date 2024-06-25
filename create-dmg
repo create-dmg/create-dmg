@@ -489,7 +489,7 @@ else
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
 			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
 			> "$APPLESCRIPT_FILE"
-		sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues  
+		sleep 2 # pause to workaround occasional "Can’t get disk" (-1728) issues
 		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
 		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
 			# Okay, we're cool
@@ -567,7 +567,7 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 	# EULA_DATA="$(base64 -b 52 "${EULA_RSRC}" | sed s$'/^\(.*\)$/\t\t\t\\1/')"
 	EULA_DATA="$(openssl base64 -in "${EULA_RSRC}" | tr -d '\n' | awk '{gsub(/.{52}/,"&\n")}1' | sed s$'/^\(.*\)$/\t\t\t\\1/')"
 	# Fill the template with the custom EULA contents
-	eval "cat > \"${EULA_RESOURCES_FILE}\" <<EOF                                                                                                                  
+	eval "cat > \"${EULA_RESOURCES_FILE}\" <<EOF
 	$(<${CDMG_SUPPORT_DIR}/eula-resources-template.xml)
 	EOF
 	"
@@ -593,7 +593,7 @@ else
 fi
 
 if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
-	echo "Codesign started"	
+	echo "Codesign started"
 	codesign -s "${SIGNATURE}" "${DMG_DIR}/${DMG_NAME}"
 	dmgsignaturecheck="$(codesign --verify --deep --verbose=2 --strict "${DMG_DIR}/${DMG_NAME}" 2>&1 >/dev/null)"
 	if [ $? -eq 0 ]; then
@@ -605,7 +605,7 @@ if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
 fi
 
 if [[ -n "${NOTARIZE}" && "${NOTARIZE}" != "-null-" ]]; then
-	echo "Notarization started"	
+	echo "Notarization started"
 	xcrun notarytool submit "${DMG_DIR}/${DMG_NAME}" --keychain-profile "${NOTARIZE}" --wait
 	echo "Stapling the notarization ticket"
 	staple="$(xcrun stapler staple "${DMG_DIR}/${DMG_NAME}")"
