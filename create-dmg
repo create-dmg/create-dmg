@@ -502,6 +502,8 @@ else
 		echo "Done running the AppleScript..."
 		sleep 4
 		rm "$APPLESCRIPT_FILE"
+	else
+		echo "Will skip running AppleScript to configure DMG aesthetics because of --skip-jenkins option..."
 	fi
 fi
 
