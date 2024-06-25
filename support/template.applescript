@@ -38,6 +38,12 @@ on run (volumeName)
 			-- Application and QL Link Clauses
 			APPLICATION_CLAUSE
 			QL_CLAUSE
+			HAL_CLAUSE
+			AU_CLAUSE
+			VST_CLAUSE
+			VST3_CLAUSE
+			CLAP_CLAUSE
+			CUSTOM_CLAUSE
 			close
 			open
 			-- Force saving of the size
