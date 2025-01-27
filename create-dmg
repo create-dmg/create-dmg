@@ -491,7 +491,7 @@ else
 			> "$APPLESCRIPT_FILE"
 
 		# pause to workaround occasional "Can’t get disk" (-1728) issues
-		ERROR_1728_WORKAROUND_SLEEP_INTERVAL=2
+		ERROR_1728_WORKAROUND_SLEEP_INTERVAL="${ERROR_1728_WORKAROUND_SLEEP_INTERVAL:-5}"
 		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_INTERVAL seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
 		sleep $ERROR_1728_WORKAROUND_SLEEP_INTERVAL
 
