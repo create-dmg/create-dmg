@@ -7,7 +7,7 @@ set -e;
 # Any command that exits with non-zero code will cause the pipeline to fail
 set -o pipefail;
 
-CDMG_VERSION='1.2.1'
+CDMG_VERSION='1.2.3'
 
 # The full path to the "support/" directory this script is using
 # (This will be set up by code later in the script.)
