@@ -30,7 +30,9 @@ IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
 BLESS=0
+OVERWRITE=0
 SKIP_JENKINS=0
+SKIP_FINALIZE=0
 MAXIMUM_UNMOUNTING_ATTEMPTS=3
 SIGNATURE=""
 NOTARIZE=""
@@ -126,6 +128,10 @@ Options:
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --skip-jenkins
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
+  --skip-finalize
+      skip creating the file read-only image, and leave a writeable dmg
+  --overwrite
+	  overwrite the output file if it already exists
   --version
 	    show create-dmg version number
   -h, --help
@@ -260,6 +266,12 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--skip-jenkins)
 			SKIP_JENKINS=1
 			shift;;
+		--skip-finalize)
+			SKIP_FINALIZE=1
+			shift;;
+		--overwrite)
+			OVERWRITE=1
+			shift;;
 		-*)
 			echo "Unknown option: $1. Run 'create-dmg --help' for help."
 			exit 1;;
@@ -291,6 +303,11 @@ SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 
 if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
 	echo "Output file name must end with a .dmg extension. Run 'create-dmg --help' for help."
+	exit 1
+fi
+
+if [[ -f "${DMG_PATH}" ]] && [[ $OVERWRITE -eq 0 ]]; then
+	echo "Output file already exists. Delete file or use the --overwrite option."
 	exit 1
 fi
 
@@ -545,16 +562,28 @@ rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
 hdiutil_detach_retry "${DEV_NAME}"
 
-# Compress image and optionally encrypt
-if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
-	echo "Compressing disk image..."
-	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
-else
-	echo "Compressing and encrypting disk image..."
-	echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
-	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
+# Remove target if requested
+if [[ $OVERWRITE -eq 1 ]] && [[ -f "${DMG_DIR}/${DMG_NAME}" ]]; then
+	rm -f "${DMG_DIR}/${DMG_NAME}"
 fi
-rm -f "${DMG_TEMP_NAME}"
+
+# Return intermediate image if requested
+if [[ $SKIP_FINALIZE -eq 1 ]]; then
+	mv "${DMG_TEMP_NAME}" "${DMG_DIR}/${DMG_NAME}"
+	echo "Read-write disk image created"
+	exit 0
+else
+	# Compress image and optionally encrypt
+	if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
+		echo "Compressing disk image..."
+		hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
+	else
+		echo "Compressing and encrypting disk image..."
+		echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
+		hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
+	fi
+	rm -f "${DMG_TEMP_NAME}"
+fi
 
 # Adding EULA resources
 if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
