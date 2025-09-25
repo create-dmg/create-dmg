@@ -34,6 +34,7 @@ SKIP_JENKINS=0
 MAXIMUM_UNMOUNTING_ATTEMPTS=3
 SIGNATURE=""
 NOTARIZE=""
+APPLICATION_LINK_NAME="Applications"
 
 function pure_version() {
 	echo "$CDMG_VERSION"
@@ -94,6 +95,8 @@ Options:
       hide the extension of file
   --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
+  --app-drop-link-name <name>
+      set the name of the Applications drop link (default is "Applications")
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
   --eula <eula_file>
@@ -202,10 +205,12 @@ while [[ "${1:0:1}" = "-" ]]; do
 			"
 			shift; shift; shift;;
 		--app-drop-link)
-			APPLICATION_LINK=$2
-			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
-			"
+			APPLICATION_LINK_X=$2
+			APPLICATION_LINK_Y=$3
 			shift; shift; shift;;
+		--app-drop-link-name)
+			APPLICATION_LINK_NAME="$2"
+			shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -302,6 +307,13 @@ fi
 if [[ "${FILESYSTEM}" == "APFS" ]] && [[ ${SANDBOX_SAFE} -eq 1 ]]; then
 	echo "Creating an APFS disk image that is sandbox safe is not supported."
 	exit 1
+fi
+
+# Set APPLICATION_CLAUSE when position is specified
+
+if [[ -n "$APPLICATION_LINK_X" ]]; then
+	APPLICATION_CLAUSE="set position of item \"$APPLICATION_LINK_NAME\" to {$APPLICATION_LINK_X, $APPLICATION_LINK_Y}
+	"
 fi
 
 # Main script logic
@@ -445,10 +457,10 @@ if [[ -n "$BACKGROUND_FILE" ]]; then
 	cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
-if [[ -n "$APPLICATION_LINK" ]]; then
+if [[ -n "$APPLICATION_LINK_X" ]]; then
 	echo "Making link to Applications dir..."
 	echo $MOUNT_DIR
-	ln -s /Applications "$MOUNT_DIR/Applications"
+	ln -s /Applications "$MOUNT_DIR/$APPLICATION_LINK_NAME"
 fi
 
 if [[ -n "$QL_LINK" ]]; then
