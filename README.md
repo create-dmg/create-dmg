@@ -70,6 +70,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--disk-image-size \<x\>:** set the disk image size manually to x MB
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
 - **--hdiutil-quiet:** execute hdiutil in quiet mode
+- **--hdiutil-retries \<x\>:** specify the number of retries for the "Resource busy" error from "hdiutil create" and "hdiutil detach" (default is 5)
 - **--bless:** bless the mount folder (deprecated, needs macOS 12.2.1 or older, [#127](https://github.com/create-dmg/create-dmg/pull/127))
 - **--codesign \<signature\>:** codesign the disk image with the specified signature
 - **--notarize \<credentials>:** notarize the disk image (waits and staples) with the keychain stored credentials
