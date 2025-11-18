@@ -50,7 +50,7 @@ function hdiutil_retry() {
 		fi
 	done
 
-	local log_file="$(mktemp)" hdiutil_retries=0 exit_code=0
+	local log_file="$(mktemp -t createdmg.log.tmp.XXXXXXXXXX)" hdiutil_retries=0 exit_code=0
 	until
 		(( ++hdiutil_retries ))
 
