@@ -336,6 +336,13 @@ DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
 DMG_TEMP_NAME="$DMG_DIR/rw.$$.${DMG_NAME}"
 
+# More argument validation checks
+
+if [[ "$DMG_NAME" == '.dmg' ]]; then
+	echo "Output file name must be the form of \"<output_name>.dmg\". Run 'create-dmg --help' for help."
+	exit 1
+fi
+
 # Detect where we're running from
 
 sentinel_file="$SCRIPT_DIR/.this-is-the-create-dmg-repo"
@@ -349,8 +356,9 @@ else
 	CDMG_SUPPORT_DIR="$prefix_dir/share/create-dmg/support"
 fi
 
+# Thus, DMG_NAME should not be only ".dmg"
 if [[ -z "$VOLUME_NAME" ]]; then
-	VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
+	VOLUME_NAME="$(basename "$DMG_NAME" .dmg)"
 fi
 
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
