@@ -148,7 +148,7 @@ Options:
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --skip-jenkins
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
-  --error-1728-sleep-duration
+  --applescript-sleep-duration
       specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --version
 	    show create-dmg version number
@@ -287,7 +287,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--skip-jenkins)
 			SKIP_JENKINS=1
 			shift;;
-		--error-1728-sleep-duration)
+		--applescript-sleep-duration)
 			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
 			shift; shift;;
 		-*)
