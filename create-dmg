@@ -34,6 +34,7 @@ SKIP_JENKINS=0
 MAXIMUM_HDIUTIL_RETRIES=5
 SIGNATURE=""
 NOTARIZE=""
+ERROR_1728_WORKAROUND_SLEEP_DURATION=5
 
 function pure_version() {
 	echo "$CDMG_VERSION"
@@ -147,6 +148,8 @@ Options:
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --skip-jenkins
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
+  --applescript-sleep-duration
+      specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --version
 	    show create-dmg version number
   -h, --help
@@ -284,6 +287,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--skip-jenkins)
 			SKIP_JENKINS=1
 			shift;;
+		--applescript-sleep-duration)
+			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
+			shift; shift;;
 		-*)
 			echo "Unknown option: $1. Run 'create-dmg --help' for help."
 			exit 1;;
@@ -515,9 +521,8 @@ else
 			> "$APPLESCRIPT_FILE"
 
 		# pause to workaround occasional "Can’t get disk" (-1728) issues
-		ERROR_1728_WORKAROUND_SLEEP_INTERVAL=2
-		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_INTERVAL seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
-		sleep $ERROR_1728_WORKAROUND_SLEEP_INTERVAL
+		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_DURATION seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
+		sleep $ERROR_1728_WORKAROUND_SLEEP_DURATION
 
 		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
 		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
