@@ -67,7 +67,7 @@ function hdiutil_retry() {
 
 		# Will return 1 if the math test fails (found "Resource busy"), then it will make
 		#   the {do... done} code block be executed, otherwise it will exit with the original exit code
-		(( "$(grep -w 'Resource busy' "$log_file" | wc -l)" == 0 )) && exit $exit_code
+		(( "$(grep -w -c 'Resource busy' "$log_file")" == 0 )) && exit $exit_code
 	do
 		# patience exhausted, exit with the original exit code
 		(( hdiutil_retries >= MAXIMUM_HDIUTIL_RETRIES )) && exit $exit_code
