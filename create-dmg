@@ -35,6 +35,9 @@ MAXIMUM_HDIUTIL_RETRIES=5
 SIGNATURE=""
 NOTARIZE=""
 ERROR_1728_WORKAROUND_SLEEP_DURATION=5
+ADD_APPLICATION_LINK=0
+APPLICATION_LINK_POS_X=0
+APPLICATION_LINK_POS_Y=0
 APPLICATION_LINK_NAME="Applications"
 
 function pure_version() {
@@ -229,8 +232,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 			"
 			shift; shift; shift;;
 		--app-drop-link)
-			APPLICATION_LINK_X=$2
-			APPLICATION_LINK_Y=$3
+			ADD_APPLICATION_LINK=1
+			APPLICATION_LINK_POS_X=$2
+			APPLICATION_LINK_POS_Y=$3
 			shift; shift; shift;;
 		--app-drop-link-name)
 			APPLICATION_LINK_NAME="$2"
@@ -341,8 +345,8 @@ fi
 
 # Set APPLICATION_CLAUSE when position is specified
 
-if [[ -n "$APPLICATION_LINK_X" ]]; then
-	APPLICATION_CLAUSE="set position of item \"$APPLICATION_LINK_NAME\" to {$APPLICATION_LINK_X, $APPLICATION_LINK_Y}
+if [[ $ADD_APPLICATION_LINK -eq 1 ]]; then
+	APPLICATION_CLAUSE="set position of item \"$APPLICATION_LINK_NAME\" to {$APPLICATION_LINK_POS_X, $APPLICATION_LINK_POS_Y}
 	"
 fi
 
@@ -487,7 +491,7 @@ if [[ -n "$BACKGROUND_FILE" ]]; then
 	cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
-if [[ -n "$APPLICATION_LINK_X" ]]; then
+if [[ $ADD_APPLICATION_LINK -eq 1 ]]; then
 	echo "Making link to Applications dir..."
 	echo $MOUNT_DIR
 	ln -s /Applications "$MOUNT_DIR/$APPLICATION_LINK_NAME"
