@@ -31,33 +31,53 @@ HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
 BLESS=0
 SKIP_JENKINS=0
-MAXIMUM_UNMOUNTING_ATTEMPTS=3
+MAXIMUM_HDIUTIL_RETRIES=5
 SIGNATURE=""
 NOTARIZE=""
+ERROR_1728_WORKAROUND_SLEEP_DURATION=5
 APPLICATION_LINK_NAME="Applications"
 
 function pure_version() {
 	echo "$CDMG_VERSION"
 }
 
-function hdiutil_detach_retry() {
-	# Unmount
-	unmounting_attempts=0
-	until
-		echo "Unmounting disk image..."
-		(( unmounting_attempts++ ))
-		hdiutil detach "$1"
-		exit_code=$?
-		(( exit_code ==  0 )) && break            # nothing goes wrong
-		(( exit_code != 16 )) && exit $exit_code  # exit with the original exit code
-		# The above statement returns 1 if test failed (exit_code == 16).
-		#   It can make the code in the {do... done} block to be executed
-	do
-		(( unmounting_attempts == MAXIMUM_UNMOUNTING_ATTEMPTS )) && exit 16  # patience exhausted, exit with code EBUSY
-		echo "Wait a moment..."
-		sleep $(( 1 * (2 ** unmounting_attempts) ))
+function hdiutil_retry() {
+	# "hdiutil detach" exits with code 16 (EBUSY) when "Resource busy", while "hdiutil create" uses code 1
+	#   for the same error, so we have to collect "Resource busy" from their normal or verbose logs
+	local hdiutil_args=() i=0
+	for arg in "$@"; do
+		if [[ "$arg" != '-quiet' ]]; then
+			hdiutil_args[$i]="$arg"
+			(( ++i ))  # do not use "i++", otherwise breaks in Bash 4.1+
+		fi
 	done
-	unset unmounting_attempts
+
+	local log_file="$(mktemp -t createdmg.log.tmp.XXXXXXXXXX)" hdiutil_retries=0 exit_code=0
+	until
+		(( ++hdiutil_retries ))
+
+		# no pipe, otherwise "diskimages-helper -processKernelRequest: will sleep received" forever
+		hdiutil "${hdiutil_args[@]}" >"$log_file" 2>&1
+		exit_code=$?
+
+		# show the log conditional
+		[[ "$HDIUTIL_VERBOSITY" != '-quiet' ]] && cat "$log_file"
+
+		# nothing goes wrong
+		(( exit_code == 0 )) && break
+
+		# Will return 1 if the math test fails (found "Resource busy"), then it will make
+		#   the {do... done} code block be executed, otherwise it will exit with the original exit code
+		(( "$(grep -w 'Resource busy' "$log_file" | wc -l)" == 0 )) && exit $exit_code
+	do
+		# patience exhausted, exit with the original exit code
+		(( hdiutil_retries >= MAXIMUM_HDIUTIL_RETRIES )) && exit $exit_code
+
+		echo "Wait a moment for \"Resource busy\"..."
+		sleep $(( 1 * (2 ** hdiutil_retries) ))
+	done
+
+	rm "$log_file"
 }
 
 function version() {
@@ -119,6 +139,8 @@ Options:
       execute hdiutil in verbose mode
   --hdiutil-quiet
       execute hdiutil in quiet mode
+  --hdiutil-retries <x>
+      specify the number of retries for the "Resource busy" error from "hdiutil create" and "hdiutil detach" (default is 5)
   --bless
       bless the mount folder (deprecated, needs macOS 12.2.1 or older)
   --codesign <signature>
@@ -129,6 +151,8 @@ Options:
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --skip-jenkins
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
+  --applescript-sleep-duration
+      specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --version
 	    show create-dmg version number
   -h, --help
@@ -247,6 +271,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--hdiutil-quiet)
 			HDIUTIL_VERBOSITY='-quiet'
 			shift;;
+		--hdiutil-retries)
+			MAXIMUM_HDIUTIL_RETRIES="$2"
+			shift; shift;;
 		--codesign)
 			SIGNATURE="$2"
 			shift; shift;;
@@ -265,6 +292,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--skip-jenkins)
 			SKIP_JENKINS=1
 			shift;;
+		--applescript-sleep-duration)
+			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
+			shift; shift;;
 		-*)
 			echo "Unknown option: $1. Run 'create-dmg --help' for help."
 			exit 1;;
@@ -387,7 +417,7 @@ if [[ $SANDBOX_SAFE -eq 0 ]]; then
 	else
 		FILESYSTEM_ARGUMENTS="-c c=64,a=16,e=16"
 	fi
-	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
+	hdiutil_retry create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
 		-fs "${FILESYSTEM}" -fsargs "${FILESYSTEM_ARGUMENTS}" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
 else
 	hdiutil makehybrid ${HDIUTIL_VERBOSITY} -default-volume-name "${VOLUME_NAME}" -hfs -o "${DMG_TEMP_NAME}" "$SRC_FOLDER"
@@ -496,16 +526,15 @@ else
 					-e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" \
 					-e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" \
 					-e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
-			| perl -pe "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" \
+			| perl -pe "s:POSITION_CLAUSE:$POSITION_CLAUSE:g" \
 			| perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" \
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
-			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
+			| perl -pe "s:HIDING_CLAUSE:$HIDING_CLAUSE:" \
 			> "$APPLESCRIPT_FILE"
 
 		# pause to workaround occasional "Can’t get disk" (-1728) issues
-		ERROR_1728_WORKAROUND_SLEEP_INTERVAL=2
-		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_INTERVAL seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
-		sleep $ERROR_1728_WORKAROUND_SLEEP_INTERVAL
+		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_DURATION seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
+		sleep $ERROR_1728_WORKAROUND_SLEEP_DURATION
 
 		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
 		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
@@ -513,7 +542,7 @@ else
 			true
 		else
 			echo >&2 "Failed running AppleScript"
-			hdiutil_detach_retry "${DEV_NAME}"
+			hdiutil_retry detach "${DEV_NAME}"
 			exit 64
 		fi
 		echo "Done running the AppleScript..."
@@ -555,7 +584,8 @@ fi
 echo "Deleting .fseventsd"
 rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
-hdiutil_detach_retry "${DEV_NAME}"
+echo "Unmounting disk image..."
+hdiutil_retry detach "${DEV_NAME}"
 
 # Compress image and optionally encrypt
 if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
