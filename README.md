@@ -58,7 +58,13 @@ All contents of source\_folder will be copied into the disk image.
 - **--icon \<file_name\> \<x\> \<y\>:** set position of the file's icon
 - **--hide-extension \<file_name\>:** hide the extension of file
 - **--app-drop-link \<x\> \<y\>:** make a drop link to Applications, at location x, y
+- **--add-drop-link \<path\> \<display-name\> \<x\> \<y\>:** make a drop link to a specified directory with a custom display name, at location x, y
 - **--ql-drop-link \<x\> \<y\>:** make a drop link to /Library/QuickLook, at location x, y
+- **--hal-drop-link \<x\> \<y\>:** make a drop link to /Library/Audio/Plug-Ins/HAL, at location x, y
+- **--au-drop-link \<x\> \<y\>:** make a drop link to /Library/Audio/Plug-Ins/Components, at location x, y
+- **--vst-drop-link \<x\> \<y\>:** make a drop link to /Library/Audio/Plug-Ins/VST, at location x, y
+- **--vst3-drop-link \<x\> \<y\>:** make a drop link to /Library/Audio/Plug-Ins/VST3, at location x, y
+- **--clap-drop-link \<x\> \<y\>:** make a drop link to /Library/Audio/Plug-Ins/CLAP, at location x, y
 - **--eula \<eula_file\>:** attach a license file to the dmg
 - **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
 - **--no-internet-enable:** disable automatic mount&copy

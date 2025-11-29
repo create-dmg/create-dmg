@@ -114,8 +114,20 @@ Options:
       hide the extension of file
   --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
+  --add-drop-link <path> <display-name> <x> <y>
+      make a drop link to a specified directory with a custom display name, at location x,y
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
+  --hal-drop-link <x> <y>
+      make a drop link to system HAL audio devices dir, at location x,y
+  --au-drop-link <x> <y>
+      make a drop link to system Audio Unit plugin components dir, at location x,y
+  --vst-drop-link <x> <y>
+      make a drop link to system VST plugin dir, at location x,y
+  --vst3-drop-link <x> <y>
+      make a drop link to system VST3 plugin dir, at location x,y
+  --clap-drop-link <x> <y>
+      make a drop link to system CLAP plugin dir, at location x,y
   --eula <eula_file>
       attach a license file to the dmg (plain text or RTF)
   --no-internet-enable
@@ -225,11 +237,42 @@ while [[ "${1:0:1}" = "-" ]]; do
 			QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
 			"
 			shift; shift; shift;;
+		--hal-drop-link)
+			HAL_LINK=$2
+			HAL_CLAUSE="set position of item \"HAL\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--au-drop-link)
+			AU_LINK=$2
+			AU_CLAUSE="set position of item \"Components\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--vst-drop-link)
+			VST_LINK=$2
+			VST_CLAUSE="set position of item \"VST\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--vst3-drop-link)
+			VST3_LINK=$2
+			VST3_CLAUSE="set position of item \"VST3\" to {$2, $3}
+			"
+			shift; shift; shift;;
+		--clap-drop-link)
+			CLAP_LINK=$2
+			CLAP_CLAUSE="set position of item \"CLAP\" to {$2, $3}
+			"
+			shift; shift; shift;;
 		--app-drop-link)
 			APPLICATION_LINK=$2
 			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
 			"
 			shift; shift; shift;;
+		--add-drop-link)
+			CUSTOM_LINK_TARGETS+=("$2")
+			CUSTOM_DISPLAY_TARGETS+=("$3")
+			CUSTOM_CLAUSE="set position of item \"$CUSTOM_DISPLAY_TARGETS\" to {$4, $5}
+			"
+			shift; shift; shift; shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -487,6 +530,46 @@ if [[ -n "$QL_LINK" ]]; then
 	ln -s "/Library/QuickLook" "$MOUNT_DIR/QuickLook"
 fi
 
+if [[ -n "$HAL_LINK" ]]; then
+	echo "Making link to HAL dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/HAL" "$MOUNT_DIR/HAL"
+fi
+
+if [[ -n "$AU_LINK" ]]; then
+	echo "Making link to Audio Units dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/Components" "$MOUNT_DIR/Components"
+fi
+
+if [[ -n "$VST_LINK" ]]; then
+	echo "Making link to VST dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/VST" "$MOUNT_DIR/VST"
+fi
+
+if [[ -n "$VST3_LINK" ]]; then
+	echo "Making link to VST3 dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/VST3" "$MOUNT_DIR/VST3"
+fi
+
+if [[ -n "$CLAP_LINK" ]]; then
+	echo "Making link to CLAP dir..."
+	echo $MOUNT_DIR
+	ln -s "/Library/Audio/Plug-Ins/CLAP" "$MOUNT_DIR/CLAP"
+fi
+
+for i in "${!CUSTOM_LINK_TARGETS[@]}"; do
+	echo "Making custom link to "${!CUSTOM_LINK_TARGETS[i]}" dir..."
+	echo $MOUNT_DIR
+	if [ ! -d "${!CUSTOM_LINK_TARGETS[i]}" ]; then
+		echo "Creating the target to the custom link..."
+		mkdir "${!CUSTOM_LINK_TARGETS[i]}"
+	fi
+	ln -s "${!CUSTOM_LINK_TARGETS[i]}" "$MOUNT_DIR/"${!CUSTOM_DISPLAY_TARGETS[i]}""
+done
+
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
@@ -516,6 +599,12 @@ else
 					-e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
 			| perl -pe "s:POSITION_CLAUSE:$POSITION_CLAUSE:g" \
 			| perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" \
+			| perl -pe "s/HAL_CLAUSE/$HAL_CLAUSE/g" \
+			| perl -pe "s/AU_CLAUSE/$AU_CLAUSE/g" \
+			| perl -pe "s/VST_CLAUSE/$VST_CLAUSE/g" \
+			| perl -pe "s/VST3_CLAUSE/$VST3_CLAUSE/g" \
+			| perl -pe "s/CLAP_CLAUSE/$CLAP_CLAUSE/g" \
+			| perl -pe "s/CUSTOM_CLAUSE/$CUSTOM_CLAUSE/g" \
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
 			| perl -pe "s:HIDING_CLAUSE:$HIDING_CLAUSE:" \
 			> "$APPLESCRIPT_FILE"
