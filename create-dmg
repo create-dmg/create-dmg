@@ -343,8 +343,6 @@ if [[ "${FILESYSTEM}" == "APFS" ]] && [[ ${SANDBOX_SAFE} -eq 1 ]]; then
 	exit 1
 fi
 
-# Set APPLICATION_CLAUSE when position is specified
-
 if [[ $ADD_APPLICATION_LINK -eq 1 ]]; then
 	APPLICATION_CLAUSE="set position of item \"$APPLICATION_LINK_NAME\" to {$APPLICATION_LINK_POS_X, $APPLICATION_LINK_POS_Y}
 	"
