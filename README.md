@@ -58,6 +58,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--icon \<file_name\> \<x\> \<y\>:** set position of the file's icon
 - **--hide-extension \<file_name\>:** hide the extension of file
 - **--app-drop-link \<x\> \<y\>:** make a drop link to Applications, at location x, y
+- **--app-drop-link-name \<name\>:** set the name of the Applications drop link (default is "Applications")
 - **--ql-drop-link \<x\> \<y\>:** make a drop link to /Library/QuickLook, at location x, y
 - **--eula \<eula_file\>:** attach a license file to the dmg
 - **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
