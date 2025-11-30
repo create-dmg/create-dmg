@@ -2,6 +2,81 @@
 
 # Create a read-only disk image of the contents of a folder
 
+# definition all colors and styles to use with an echo
+
+# Reset
+Color_Off='\033[0m'       # Text Reset
+
+# Regular Colors
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+
+# Bold
+BBlack='\033[1;30m'       # Black
+BRed='\033[1;31m'         # Red
+BGreen='\033[1;32m'       # Green
+BYellow='\033[1;33m'      # Yellow
+BBlue='\033[1;34m'        # Blue
+BPurple='\033[1;35m'      # Purple
+BCyan='\033[1;36m'        # Cyan
+BWhite='\033[1;37m'       # White
+
+# Underline
+UBlack='\033[4;30m'       # Black
+URed='\033[4;31m'         # Red
+UGreen='\033[4;32m'       # Green
+UYellow='\033[4;33m'      # Yellow
+UBlue='\033[4;34m'        # Blue
+UPurple='\033[4;35m'      # Purple
+UCyan='\033[4;36m'        # Cyan
+UWhite='\033[4;37m'       # White
+
+# Background
+On_Black='\033[40m'       # Black
+On_Red='\033[41m'         # Red
+On_Green='\033[42m'       # Green
+On_Yellow='\033[43m'      # Yellow
+On_Blue='\033[44m'        # Blue
+On_Purple='\033[45m'      # Purple
+On_Cyan='\033[46m'        # Cyan
+On_White='\033[47m'       # White
+
+# High Intensity
+IBlack='\033[0;90m'       # Black
+IRed='\033[0;91m'         # Red
+IGreen='\033[0;92m'       # Green
+IYellow='\033[0;93m'      # Yellow
+IBlue='\033[0;94m'        # Blue
+IPurple='\033[0;95m'      # Purple
+ICyan='\033[0;96m'        # Cyan
+IWhite='\033[0;97m'       # White
+
+# Bold High Intensity
+BIBlack='\033[1;90m'      # Black
+BIRed='\033[1;91m'        # Red
+BIGreen='\033[1;92m'      # Green
+BIYellow='\033[1;93m'     # Yellow
+BIBlue='\033[1;94m'       # Blue
+BIPurple='\033[1;95m'     # Purple
+BICyan='\033[1;96m'       # Cyan
+BIWhite='\033[1;97m'      # White
+
+# High Intensity backgrounds
+On_IBlack='\033[0;100m'   # Black
+On_IRed='\033[0;101m'     # Red
+On_IGreen='\033[0;102m'   # Green
+On_IYellow='\033[0;103m'  # Yellow
+On_IBlue='\033[0;104m'    # Blue
+On_IPurple='\033[0;105m'  # Purple
+On_ICyan='\033[0;106m'    # Cyan
+On_IWhite='\033[0;107m'   # White
+
 # Bail out on any unhandled errors
 set -e;
 # Any command that exits with non-zero code will cause the pipeline to fail
@@ -187,9 +262,35 @@ while [[ "${1:0:1}" = "-" ]]; do
 			shift; shift;;
 		--volicon)
 			VOLUME_ICON_FILE="$2"
+			if [ ! -e "$VOLUME_ICON_FILE" ]; then
+    			echo -e $BRed "this file does not exist : '"$VOLUME_ICON_FILE"'" $Color_Off
+				ls -alg
+				exit 8
+			fi
+			# Get values using sips
+			pixelWidth=$(sips -g pixelWidth "$VOLUME_ICON_FILE" | awk '/pixelWidth/ { print $2 }')
+			pixelHeight=$(sips -g pixelHeight "$VOLUME_ICON_FILE" | awk '/pixelHeight/ { print $2 }')
+			dpiWidth=$(sips -g dpiWidth "$VOLUME_ICON_FILE" | awk '/dpiWidth/ { print $2 }')
+			dpiHeight=$(sips -g dpiHeight "$VOLUME_ICON_FILE" | awk '/dpiHeight/ { print $2 }')
+			# Check all conditions
+			if [[ "$pixelWidth" == "1024" && "$pixelHeight" == "1024" && "$dpiWidth" == "144.000" && "$dpiHeight" == "144.000" ]]; then
+				echo -e $Green "$VOLUME_ICON_FILE has correct size and DPI (1024x1024 @ 144 DPI)" $Color_Off
+				echo
+			else
+				echo -e $BRed "$VOLUME_ICON_FILE does not meet required specs:" $Color_Off
+				echo "    pixelWidth: $pixelWidth"
+				echo "    pixelHeight: $pixelHeight"
+				echo "    dpiWidth: $dpiWidth"
+				echo "    dpiHeight: $dpiHeight"
+				exit 8
+			fi
 			shift; shift;;
 		--background)
 			BACKGROUND_FILE="$2"
+			if [ ! -e "$BACKGROUND_FILE" ]; then
+    			echo -e $BRed "this file does not exist : '"$BACKGROUND_FILE"'" $Color_Off
+				exit 8
+			fi
 			BACKGROUND_FILE_NAME="$(basename "$BACKGROUND_FILE")"
 			BACKGROUND_CLAUSE="set background picture of opts to file \".background:$BACKGROUND_FILE_NAME\""
 			REPOSITION_HIDDEN_FILES_CLAUSE="set position of every item to {theBottomRightX + 100, 100}"
@@ -207,12 +308,10 @@ while [[ "${1:0:1}" = "-" ]]; do
 			WINW=$2; WINH=$3
 			shift; shift; shift;;
 		--icon)
-			POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}
-			"
+			POSITION_CLAUSE="${POSITION_CLAUSE}set position of item \"$2\" to {$3, $4}"
 			shift; shift; shift; shift;;
 		--hide-extension)
-			HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true
-			"
+			HIDING_CLAUSE="${HIDING_CLAUSE}set the extension hidden of item \"$2\" to true"
 			shift; shift;;
 		-h | --help)
 			usage;;
@@ -222,13 +321,11 @@ while [[ "${1:0:1}" = "-" ]]; do
 			pure_version; exit 0;;
 		--ql-drop-link)
 			QL_LINK=$2
-			QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}
-			"
+			QL_CLAUSE="set position of item \"QuickLook\" to {$2, $3}"
 			shift; shift; shift;;
 		--app-drop-link)
 			APPLICATION_LINK=$2
-			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
-			"
+			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}"
 			shift; shift; shift;;
 		--eula)
 			EULA_RSRC=$2
@@ -282,7 +379,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 			BLESS=1
 			shift;;
 		--rez)
-			echo "REZ is no more directly used. You can remove the --rez argument."
+			echo -e $BYellow "REZ is no more directly used. You can remove the --rez argument." $Color_Off
 			shift; shift;;
 		--skip-jenkins)
 			SKIP_JENKINS=1
@@ -291,7 +388,7 @@ while [[ "${1:0:1}" = "-" ]]; do
 			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
 			shift; shift;;
 		-*)
-			echo "Unknown option: $1. Run 'create-dmg --help' for help."
+			echo -e $BYellow "Unknown option: $1. Run 'create-dmg --help' for help." $Color_Off
 			exit 1;;
 	esac
 	case $FORMAT in
@@ -304,13 +401,13 @@ while [[ "${1:0:1}" = "-" ]]; do
 		ULMO)
 			;;
 		*)
-			echo >&2 "Unknown disk image format: $FORMAT"
+			echo -e $BYellow >&2 "Unknown disk image format: $FORMAT" $Color_Off
 			exit 1;;
 	esac
 done
 
 if [[ -z "$2" ]]; then
-	echo "Not enough arguments. Run 'create-dmg --help' for help."
+	echo -e $BRed "Not enough arguments. Run 'create-dmg --help' for help." $Color_Off
 	exit 1
 fi
 
@@ -320,17 +417,17 @@ SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
 # Argument validation checks
 
 if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
-	echo "Output file name must end with a .dmg extension. Run 'create-dmg --help' for help."
+	echo -e $BRed "Output file name must end with a .dmg extension. Run 'create-dmg --help' for help." $Color_Off
 	exit 1
 fi
 
 if [[ "${FILESYSTEM}" != "HFS+" ]] && [[ "${FILESYSTEM}" != "APFS" ]]; then
-	echo "Unknown disk image filesystem: ${FILESYSTEM}. Run 'create-dmg --help' for help."
+	echo -e $BRed "Unknown disk image filesystem: ${FILESYSTEM}. Run 'create-dmg --help' for help." $Color_Off
 	exit 1
 fi
 
 if [[ "${FILESYSTEM}" == "APFS" ]] && [[ ${SANDBOX_SAFE} -eq 1 ]]; then
-	echo "Creating an APFS disk image that is sandbox safe is not supported."
+	echo -e $BRed "Creating an APFS disk image that is sandbox safe is not supported." $Color_Off
 	exit 1
 fi
 
@@ -368,7 +465,7 @@ if [[ -z "$VOLUME_NAME" ]]; then
 fi
 
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
-	echo >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR"
+	echo -e $BRed >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR" $Color_Off
 	exit 1
 fi
 
@@ -378,7 +475,7 @@ if [[ -f "$SRC_FOLDER/.DS_Store" ]]; then
 fi
 
 # Create the image
-echo "Creating disk image..."
+echo -e $Green "Creating disk image..." $Color_Off
 if [[ -f "${DMG_TEMP_NAME}" ]]; then
 	rm -f "${DMG_TEMP_NAME}"
 fi
@@ -451,7 +548,7 @@ hdiutil resize ${HDIUTIL_VERBOSITY} -size ${DISK_IMAGE_SIZE}m "${DMG_TEMP_NAME}"
 
 # Mount the new DMG
 
-echo "Mounting disk image..."
+echo -e $Green "Mounting disk image..." $Color_Off
 
 MOUNT_RANDOM_PATH="/Volumes"
 if [[ $SANDBOX_SAFE -eq 1 ]]; then
@@ -463,7 +560,7 @@ else
   HDIUTIL_FILTER="sed 1q"
 fi
 DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | ${HDIUTIL_FILTER} | awk '{print $1}')
-echo "Device name:     $DEV_NAME"
+echo -e $Green "Device name:     $DEV_NAME" $Color_Off
 if [[ "$FILESYSTEM" == "APFS" ]]; then
   MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
 else
@@ -475,7 +572,7 @@ if [[ -z "${MOUNT_DIR}" ]]; then
   exit 1
 fi
 
-echo "Mount dir:       $MOUNT_DIR"
+echo -e $Green "Mount dir:       $MOUNT_DIR" $Color_Off
 
 if [[ -n "$BACKGROUND_FILE" ]]; then
 	echo "Copying background file '$BACKGROUND_FILE'..."
@@ -498,7 +595,17 @@ fi
 if [[ -n "$VOLUME_ICON_FILE" ]]; then
 	echo "Copying volume icon file '$VOLUME_ICON_FILE'..."
 	cp "$VOLUME_ICON_FILE" "$MOUNT_DIR/.VolumeIcon.icns"
-	SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
+	if [ $? -ne 0 ]; then
+    	echo -e $BRed "cp of "$VOLUME_ICON_FILE" to "$MOUNT_DIR"/ is failed" $Color_Off
+		exit 8
+	else
+		SetFile -c icnC "$MOUNT_DIR/.VolumeIcon.icns"
+		if [ $? -ne 0 ]; then
+			echo -e $BRed "SetFile failt on $MOUNT_DIR/.VolumeIcon.icns" $Color_Off
+			exit 8
+		fi
+	fi
+	echo
 fi
 
 if [[ -n "$ADD_FILE_SOURCES" ]]; then
@@ -541,7 +648,7 @@ else
 			hdiutil_retry detach "${DEV_NAME}"
 			exit 64
 		fi
-		echo "Done running the AppleScript..."
+		echo -e $Green "Done running the AppleScript..." $Color_Off
 		sleep 4
 		rm "$APPLESCRIPT_FILE"
 	else
@@ -554,19 +661,19 @@ else
 fi
 
 # Make sure it's not world writeable
-echo "Fixing permissions..."
+echo -e $Green "Fixing permissions..." $Color_Off
 chmod -Rf go-w "${MOUNT_DIR}" &> /dev/null || true
 echo "Done fixing permissions"
 
 # Make the top window open itself on mount:
 if [[ $BLESS -eq 1 && $SANDBOX_SAFE -eq 0 ]]; then
-	echo "Blessing started"
+	echo -e $Green "Blessing started" $Color_Off
 	if [ $(uname -m) == "arm64" ]; then
 		bless --folder "${MOUNT_DIR}"
 	else
 		bless --folder "${MOUNT_DIR}" --openfolder "${MOUNT_DIR}"
 	fi
-	echo "Blessing finished"
+	echo -e $Green "Blessing finished" $Color_Off
 else
 	echo "Skipping blessing on sandbox"
 fi
@@ -577,26 +684,28 @@ if [[ -n "$VOLUME_ICON_FILE" ]]; then
 fi
 
 # Delete unnecessary file system events log if possible
-echo "Deleting .fseventsd"
+echo -e $Green "Deleting .fseventsd" $Color_Off
 rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
 echo "Unmounting disk image..."
 hdiutil_retry detach "${DEV_NAME}"
 
 # Compress image and optionally encrypt
+echo
 if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
-	echo "Compressing disk image..."
+	echo -e $Green "Compressing disk image..." $Color_Off
 	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
 else
-	echo "Compressing and encrypting disk image..."
+	echo -e $Green "Compressing and encrypting disk image..." $Color_Off
 	echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
 	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
 fi
 rm -f "${DMG_TEMP_NAME}"
 
 # Adding EULA resources
+echo
 if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
-	echo "Adding EULA resources..."
+	echo -e $Green "Adding EULA resources..." $Color_Off
 	#
 	# Use udifrez instead flatten/rez/unflatten
 	# https://github.com/create-dmg/create-dmg/issues/109
@@ -625,7 +734,7 @@ if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
 		echo "Failed to add the EULA license"
 		exit 1
 	}
-	echo "Successfully added the EULA license"
+	echo -e $Green "Successfully added the EULA license" $Color_Off
 fi
 
 # Enable "internet", whatever that is
@@ -642,7 +751,7 @@ else
 fi
 
 if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
-	echo "Codesign started"
+	echo -e $Green "Codesign started" $Color_Off
 	codesign -s "${SIGNATURE}" "${DMG_DIR}/${DMG_NAME}"
 	dmgsignaturecheck="$(codesign --verify --deep --verbose=2 --strict "${DMG_DIR}/${DMG_NAME}" 2>&1 >/dev/null)"
 	if [ $? -eq 0 ]; then
@@ -654,7 +763,7 @@ if [[ -n "${SIGNATURE}" && "${SIGNATURE}" != "-null-" ]]; then
 fi
 
 if [[ -n "${NOTARIZE}" && "${NOTARIZE}" != "-null-" ]]; then
-	echo "Notarization started"
+	echo -e $Green "Notarization started" $Color_Off
 	xcrun notarytool submit "${DMG_DIR}/${DMG_NAME}" --keychain-profile "${NOTARIZE}" --wait
 	echo "Stapling the notarization ticket"
 	staple="$(xcrun stapler staple "${DMG_DIR}/${DMG_NAME}")"
@@ -668,5 +777,5 @@ if [[ -n "${NOTARIZE}" && "${NOTARIZE}" != "-null-" ]]; then
 fi
 
 # All done!
-echo "Disk image done"
+echo -e $BGreen "Disk image done" $Color_Off
 exit 0
