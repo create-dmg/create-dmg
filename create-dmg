@@ -67,7 +67,7 @@ function hdiutil_retry() {
 
 		# Will return 1 if the math test fails (found "Resource busy"), then it will make
 		#   the {do... done} code block be executed, otherwise it will exit with the original exit code
-		(( "$(grep -w 'Resource busy' "$log_file" | wc -l)" == 0 )) && exit $exit_code
+		(( "$(grep -w -c 'Resource busy' "$log_file")" == 0 )) && exit $exit_code
 	do
 		# patience exhausted, exit with the original exit code
 		(( hdiutil_retries >= MAXIMUM_HDIUTIL_RETRIES )) && exit $exit_code
@@ -151,9 +151,9 @@ Options:
   --applescript-sleep-duration
       specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --version
-	    show create-dmg version number
+      show create-dmg version number
   -h, --help
-	    display this help screen
+      display this help screen
 
 EOHELP
 	exit 0
@@ -443,7 +443,7 @@ DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
 # Make sure target image size is within limits
 MIN_DISK_IMAGE_SIZE=$(hdiutil resize -limits "${DMG_TEMP_NAME}" | awk 'NR=1{print int($1/2048+1)}')
 if [ $MIN_DISK_IMAGE_SIZE -gt $DISK_IMAGE_SIZE ]; then
-       DISK_IMAGE_SIZE=$MIN_DISK_IMAGE_SIZE
+	DISK_IMAGE_SIZE=$MIN_DISK_IMAGE_SIZE
 fi
 
 # Resize the image for the extra stuff
@@ -458,21 +458,21 @@ if [[ $SANDBOX_SAFE -eq 1 ]]; then
 	MOUNT_RANDOM_PATH="/tmp"
 fi
 if [[ "$FILESYSTEM" == "APFS" ]]; then
-  HDIUTIL_FILTER="tail -n 1"
+	HDIUTIL_FILTER="tail -n 1"
 else
-  HDIUTIL_FILTER="sed 1q"
+	HDIUTIL_FILTER="sed 1q"
 fi
 DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | ${HDIUTIL_FILTER} | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 if [[ "$FILESYSTEM" == "APFS" ]]; then
-  MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
+	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
 else
 	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
 fi
 if [[ -z "${MOUNT_DIR}" ]]; then
-  >&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
-  >&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
-  exit 1
+	>&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
+	>&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
+	exit 1
 fi
 
 echo "Mount dir:       $MOUNT_DIR"
