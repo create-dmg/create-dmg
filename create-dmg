@@ -405,7 +405,7 @@ if [[ -f "$DMG_PATH" ]]; then
 	fi
 
 	echo "Deleting existing output file..."
-	rm -f "$DMG_PATH"
+	rm "$DMG_PATH"
 fi
 
 if [[ -f "$SRC_FOLDER/.DS_Store" ]]; then
