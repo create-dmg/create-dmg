@@ -624,18 +624,18 @@ if [[ $SKIP_FINALIZE -eq 1 ]]; then
 	mv "${DMG_TEMP_NAME}" "${DMG_DIR}/${DMG_NAME}"
 	echo "Read-write disk image created"
 	exit 0
-else
-	# Compress image and optionally encrypt
-	if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
-		echo "Compressing disk image..."
-		hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
-	else
-		echo "Compressing and encrypting disk image..."
-		echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
-		hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
-	fi
-	rm -f "${DMG_TEMP_NAME}"
 fi
+
+# Compress image and optionally encrypt
+if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
+	echo "Compressing disk image..."
+	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -o "${DMG_DIR}/${DMG_NAME}"
+else
+	echo "Compressing and encrypting disk image..."
+	echo "NOTE: hdiutil will only prompt a single time for a password - ensure entry is correct."
+	hdiutil convert ${HDIUTIL_VERBOSITY} "${DMG_TEMP_NAME}" -format ${FORMAT} ${IMAGEKEY} -encryption AES-${AESBITS} -stdinpass -o "${DMG_DIR}/${DMG_NAME}"
+fi
+rm -f "${DMG_TEMP_NAME}"
 
 # Adding EULA resources
 if [[ -n "${EULA_RSRC}" && "${EULA_RSRC}" != "-null-" ]]; then
