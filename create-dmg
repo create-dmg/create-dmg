@@ -404,7 +404,7 @@ if [[ -f "$DMG_PATH" ]]; then
 		exit 1
 	fi
 
-	echo "Deleting existing output file..."
+	echo "Deleting existing output file"
 	rm "$DMG_PATH"
 fi
 
