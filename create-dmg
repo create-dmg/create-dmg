@@ -159,9 +159,9 @@ Options:
   --applescript-sleep-duration
       specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --skip-finalize
-      skip creating the file read-only image, and leave a writeable dmg
+      skip creating the final read-only dmg, and leave a writable one
   --overwrite
-	  overwrite the output file if it already exists
+      overwrite the output file if it already exists
   --version
       show create-dmg version number
   -h, --help
@@ -621,7 +621,7 @@ hdiutil_retry detach "${DEV_NAME}"
 
 # Return intermediate image if requested
 if [[ $SKIP_FINALIZE -eq 1 ]]; then
-	mv "${DMG_TEMP_NAME}" "${DMG_DIR}/${DMG_NAME}"
+	mv "$DMG_TEMP_NAME" "$DMG_PATH"
 	echo "Read-write disk image created"
 	exit 0
 fi
