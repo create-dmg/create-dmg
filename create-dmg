@@ -39,6 +39,8 @@ ADD_APPLICATION_LINK=0
 APPLICATION_LINK_POS_X=0
 APPLICATION_LINK_POS_Y=0
 APPLICATION_LINK_NAME="Applications"
+SKIP_FINALIZE=0
+OVERWRITE=0
 
 function pure_version() {
 	echo "$CDMG_VERSION"
@@ -156,6 +158,10 @@ Options:
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
   --applescript-sleep-duration
       specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
+  --skip-finalize
+      skip creating the final read-only disk image, and leave a writable one
+  --overwrite
+      overwrite the output file if it already exists
   --version
       show create-dmg version number
   -h, --help
@@ -299,6 +305,12 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--applescript-sleep-duration)
 			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
 			shift; shift;;
+		--skip-finalize)
+			SKIP_FINALIZE=1
+			shift;;
+		--overwrite)
+			OVERWRITE=1
+			shift;;
 		-*)
 			echo "Unknown option: $1. Run 'create-dmg --help' for help."
 			exit 1;;
@@ -384,6 +396,16 @@ fi
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
 	echo >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR"
 	exit 1
+fi
+
+if [[ -f "$DMG_PATH" ]]; then
+	if [[ $OVERWRITE -ne 1 ]]; then
+		echo "Output file already exists. Delete file or use the --overwrite option."
+		exit 1
+	fi
+
+	echo "Deleting existing output file"
+	rm "$DMG_PATH"
 fi
 
 if [[ -f "$SRC_FOLDER/.DS_Store" ]]; then
@@ -596,6 +618,13 @@ rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
 echo "Unmounting disk image..."
 hdiutil_retry detach "${DEV_NAME}"
+
+# Return intermediate image if requested
+if [[ $SKIP_FINALIZE -eq 1 ]]; then
+	mv "$DMG_TEMP_NAME" "$DMG_PATH"
+	echo "Writable disk image created, exit"
+	exit 0
+fi
 
 # Compress image and optionally encrypt
 if [[ $ENABLE_ENCRYPTION -eq 0 ]]; then
