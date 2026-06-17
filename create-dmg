@@ -345,9 +345,14 @@ if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
 	exit 1
 fi
 
-if [[ -f "${DMG_PATH}" ]] && [[ $OVERWRITE -eq 0 ]]; then
-	echo "Output file already exists. Delete file or use the --overwrite option."
-	exit 1
+if [[ -f "$DMG_PATH" ]]; then
+	if [[ $OVERWRITE -ne 1 ]]; then
+		echo "Output file already exists. Delete file or use the --overwrite option."
+		exit 1
+	fi
+
+	echo "Deleting existing output file..."
+	rm -f "$DMG_PATH"
 fi
 
 if [[ "${FILESYSTEM}" != "HFS+" ]] && [[ "${FILESYSTEM}" != "APFS" ]]; then
@@ -613,11 +618,6 @@ rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
 echo "Unmounting disk image..."
 hdiutil_retry detach "${DEV_NAME}"
-
-# Remove target if requested
-if [[ $OVERWRITE -eq 1 ]] && [[ -f "${DMG_DIR}/${DMG_NAME}" ]]; then
-	rm -f "${DMG_DIR}/${DMG_NAME}"
-fi
 
 # Return intermediate image if requested
 if [[ $SKIP_FINALIZE -eq 1 ]]; then
