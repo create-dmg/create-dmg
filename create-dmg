@@ -7,7 +7,7 @@ set -e;
 # Any command that exits with non-zero code will cause the pipeline to fail
 set -o pipefail;
 
-CDMG_VERSION='1.2.1'
+CDMG_VERSION='1.2.3'
 
 # The full path to the "support/" directory this script is using
 # (This will be set up by code later in the script.)
@@ -30,35 +30,59 @@ IMAGEKEY=""
 HDIUTIL_VERBOSITY=""
 SANDBOX_SAFE=0
 BLESS=0
-OVERWRITE=0
 SKIP_JENKINS=0
-SKIP_FINALIZE=0
-MAXIMUM_UNMOUNTING_ATTEMPTS=3
+MAXIMUM_HDIUTIL_RETRIES=5
 SIGNATURE=""
 NOTARIZE=""
+ERROR_1728_WORKAROUND_SLEEP_DURATION=5
+ADD_APPLICATION_LINK=0
+APPLICATION_LINK_POS_X=0
+APPLICATION_LINK_POS_Y=0
+APPLICATION_LINK_NAME="Applications"
+SKIP_FINALIZE=0
+OVERWRITE=0
 
 function pure_version() {
 	echo "$CDMG_VERSION"
 }
 
-function hdiutil_detach_retry() {
-	# Unmount
-	unmounting_attempts=0
-	until
-		echo "Unmounting disk image..."
-		(( unmounting_attempts++ ))
-		hdiutil detach "$1"
-		exit_code=$?
-		(( exit_code ==  0 )) && break            # nothing goes wrong
-		(( exit_code != 16 )) && exit $exit_code  # exit with the original exit code
-		# The above statement returns 1 if test failed (exit_code == 16).
-		#   It can make the code in the {do... done} block to be executed
-	do
-		(( unmounting_attempts == MAXIMUM_UNMOUNTING_ATTEMPTS )) && exit 16  # patience exhausted, exit with code EBUSY
-		echo "Wait a moment..."
-		sleep $(( 1 * (2 ** unmounting_attempts) ))
+function hdiutil_retry() {
+	# "hdiutil detach" exits with code 16 (EBUSY) when "Resource busy", while "hdiutil create" uses code 1
+	#   for the same error, so we have to collect "Resource busy" from their normal or verbose logs
+	local hdiutil_args=() i=0
+	for arg in "$@"; do
+		if [[ "$arg" != '-quiet' ]]; then
+			hdiutil_args[$i]="$arg"
+			(( ++i ))  # do not use "i++", otherwise breaks in Bash 4.1+
+		fi
 	done
-	unset unmounting_attempts
+
+	local log_file="$(mktemp -t createdmg.log.tmp.XXXXXXXXXX)" hdiutil_retries=0 exit_code=0
+	until
+		(( ++hdiutil_retries ))
+
+		# no pipe, otherwise "diskimages-helper -processKernelRequest: will sleep received" forever
+		hdiutil "${hdiutil_args[@]}" >"$log_file" 2>&1
+		exit_code=$?
+
+		# show the log conditional
+		[[ "$HDIUTIL_VERBOSITY" != '-quiet' ]] && cat "$log_file"
+
+		# nothing goes wrong
+		(( exit_code == 0 )) && break
+
+		# Will return 1 if the math test fails (found "Resource busy"), then it will make
+		#   the {do... done} code block be executed, otherwise it will exit with the original exit code
+		(( "$(grep -w -c 'Resource busy' "$log_file")" == 0 )) && exit $exit_code
+	do
+		# patience exhausted, exit with the original exit code
+		(( hdiutil_retries >= MAXIMUM_HDIUTIL_RETRIES )) && exit $exit_code
+
+		echo "Wait a moment for \"Resource busy\"..."
+		sleep $(( 1 * (2 ** hdiutil_retries) ))
+	done
+
+	rm "$log_file"
 }
 
 function version() {
@@ -96,6 +120,8 @@ Options:
       hide the extension of file
   --app-drop-link <x> <y>
       make a drop link to Applications, at location x,y
+  --app-drop-link-name <name>
+      set the name of the Applications drop link (default is "Applications")
   --ql-drop-link <x> <y>
       make a drop link to user QuickLook install dir, at location x,y
   --eula <eula_file>
@@ -118,6 +144,8 @@ Options:
       execute hdiutil in verbose mode
   --hdiutil-quiet
       execute hdiutil in quiet mode
+  --hdiutil-retries <x>
+      specify the number of retries for the "Resource busy" error from "hdiutil create" and "hdiutil detach" (default is 5)
   --bless
       bless the mount folder (deprecated, needs macOS 12.2.1 or older)
   --codesign <signature>
@@ -128,14 +156,16 @@ Options:
       execute hdiutil with sandbox compatibility and do not bless (not supported for APFS disk images)
   --skip-jenkins
       skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments
+  --applescript-sleep-duration
+      specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
   --skip-finalize
       skip creating the file read-only image, and leave a writeable dmg
   --overwrite
 	  overwrite the output file if it already exists
   --version
-	    show create-dmg version number
+      show create-dmg version number
   -h, --help
-	    display this help screen
+      display this help screen
 
 EOHELP
 	exit 0
@@ -208,10 +238,13 @@ while [[ "${1:0:1}" = "-" ]]; do
 			"
 			shift; shift; shift;;
 		--app-drop-link)
-			APPLICATION_LINK=$2
-			APPLICATION_CLAUSE="set position of item \"Applications\" to {$2, $3}
-			"
+			ADD_APPLICATION_LINK=1
+			APPLICATION_LINK_POS_X=$2
+			APPLICATION_LINK_POS_Y=$3
 			shift; shift; shift;;
+		--app-drop-link-name)
+			APPLICATION_LINK_NAME="$2"
+			shift; shift;;
 		--eula)
 			EULA_RSRC=$2
 			shift; shift;;
@@ -248,6 +281,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--hdiutil-quiet)
 			HDIUTIL_VERBOSITY='-quiet'
 			shift;;
+		--hdiutil-retries)
+			MAXIMUM_HDIUTIL_RETRIES="$2"
+			shift; shift;;
 		--codesign)
 			SIGNATURE="$2"
 			shift; shift;;
@@ -266,6 +302,9 @@ while [[ "${1:0:1}" = "-" ]]; do
 		--skip-jenkins)
 			SKIP_JENKINS=1
 			shift;;
+		--applescript-sleep-duration)
+			ERROR_1728_WORKAROUND_SLEEP_DURATION="$2"
+			shift; shift;;
 		--skip-finalize)
 			SKIP_FINALIZE=1
 			shift;;
@@ -321,6 +360,11 @@ if [[ "${FILESYSTEM}" == "APFS" ]] && [[ ${SANDBOX_SAFE} -eq 1 ]]; then
 	exit 1
 fi
 
+if [[ $ADD_APPLICATION_LINK -eq 1 ]]; then
+	APPLICATION_CLAUSE="set position of item \"$APPLICATION_LINK_NAME\" to {$APPLICATION_LINK_POS_X, $APPLICATION_LINK_POS_Y}
+	"
+fi
+
 # Main script logic
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -328,6 +372,13 @@ DMG_DIRNAME="$(dirname "$DMG_PATH")"
 DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
 DMG_TEMP_NAME="$DMG_DIR/rw.$$.${DMG_NAME}"
+
+# More argument validation checks
+
+if [[ "$DMG_NAME" == '.dmg' ]]; then
+	echo "Output file name must be the form of \"<output_name>.dmg\". Run 'create-dmg --help' for help."
+	exit 1
+fi
 
 # Detect where we're running from
 
@@ -342,8 +393,9 @@ else
 	CDMG_SUPPORT_DIR="$prefix_dir/share/create-dmg/support"
 fi
 
+# Thus, DMG_NAME should not be only ".dmg"
 if [[ -z "$VOLUME_NAME" ]]; then
-	VOLUME_NAME="$(basename "$DMG_PATH" .dmg)"
+	VOLUME_NAME="$(basename "$DMG_NAME" .dmg)"
 fi
 
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
@@ -392,7 +444,7 @@ if [[ $SANDBOX_SAFE -eq 0 ]]; then
 	else
 		FILESYSTEM_ARGUMENTS="-c c=64,a=16,e=16"
 	fi
-	hdiutil create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
+	hdiutil_retry create ${HDIUTIL_VERBOSITY} -srcfolder "$SRC_FOLDER" -volname "${VOLUME_NAME}" \
 		-fs "${FILESYSTEM}" -fsargs "${FILESYSTEM_ARGUMENTS}" -format UDRW ${CUSTOM_SIZE} "${DMG_TEMP_NAME}"
 else
 	hdiutil makehybrid ${HDIUTIL_VERBOSITY} -default-volume-name "${VOLUME_NAME}" -hfs -o "${DMG_TEMP_NAME}" "$SRC_FOLDER"
@@ -422,7 +474,7 @@ DISK_IMAGE_SIZE=$(expr $DISK_IMAGE_SIZE + 20)
 # Make sure target image size is within limits
 MIN_DISK_IMAGE_SIZE=$(hdiutil resize -limits "${DMG_TEMP_NAME}" | awk 'NR=1{print int($1/2048+1)}')
 if [ $MIN_DISK_IMAGE_SIZE -gt $DISK_IMAGE_SIZE ]; then
-       DISK_IMAGE_SIZE=$MIN_DISK_IMAGE_SIZE
+	DISK_IMAGE_SIZE=$MIN_DISK_IMAGE_SIZE
 fi
 
 # Resize the image for the extra stuff
@@ -437,21 +489,21 @@ if [[ $SANDBOX_SAFE -eq 1 ]]; then
 	MOUNT_RANDOM_PATH="/tmp"
 fi
 if [[ "$FILESYSTEM" == "APFS" ]]; then
-  HDIUTIL_FILTER="tail -n 1"
+	HDIUTIL_FILTER="tail -n 1"
 else
-  HDIUTIL_FILTER="sed 1q"
+	HDIUTIL_FILTER="sed 1q"
 fi
 DEV_NAME=$(hdiutil attach -mountrandom ${MOUNT_RANDOM_PATH} -readwrite -noverify -noautoopen -nobrowse "${DMG_TEMP_NAME}" | grep -E --color=never '^/dev/' | ${HDIUTIL_FILTER} | awk '{print $1}')
 echo "Device name:     $DEV_NAME"
 if [[ "$FILESYSTEM" == "APFS" ]]; then
-  MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
+	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}")
 else
 	MOUNT_DIR=$(find_mount_dir "${DEV_NAME}s")
 fi
 if [[ -z "${MOUNT_DIR}" ]]; then
-  >&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
-  >&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
-  exit 1
+	>&2 echo "ERROR: unable to proceed with final disk image creation because the interstitial disk image was not found."
+	>&2 echo "The interstitial disk image will likely be mounted and will need to be cleaned up manually."
+	exit 1
 fi
 
 echo "Mount dir:       $MOUNT_DIR"
@@ -462,10 +514,10 @@ if [[ -n "$BACKGROUND_FILE" ]]; then
 	cp "$BACKGROUND_FILE" "$MOUNT_DIR/.background/$BACKGROUND_FILE_NAME"
 fi
 
-if [[ -n "$APPLICATION_LINK" ]]; then
+if [[ $ADD_APPLICATION_LINK -eq 1 ]]; then
 	echo "Making link to Applications dir..."
 	echo $MOUNT_DIR
-	ln -s /Applications "$MOUNT_DIR/Applications"
+	ln -s /Applications "$MOUNT_DIR/$APPLICATION_LINK_NAME"
 fi
 
 if [[ -n "$QL_LINK" ]]; then
@@ -501,16 +553,15 @@ else
 					-e "s/WINH/$WINH/g" -e "s/BACKGROUND_CLAUSE/$BACKGROUND_CLAUSE/g" \
 					-e "s/REPOSITION_HIDDEN_FILES_CLAUSE/$REPOSITION_HIDDEN_FILES_CLAUSE/g" \
 					-e "s/ICON_SIZE/$ICON_SIZE/g" -e "s/TEXT_SIZE/$TEXT_SIZE/g" \
-			| perl -pe "s/POSITION_CLAUSE/$POSITION_CLAUSE/g" \
+			| perl -pe "s:POSITION_CLAUSE:$POSITION_CLAUSE:g" \
 			| perl -pe "s/QL_CLAUSE/$QL_CLAUSE/g" \
 			| perl -pe "s/APPLICATION_CLAUSE/$APPLICATION_CLAUSE/g" \
-			| perl -pe "s/HIDING_CLAUSE/$HIDING_CLAUSE/" \
+			| perl -pe "s:HIDING_CLAUSE:$HIDING_CLAUSE:" \
 			> "$APPLESCRIPT_FILE"
 
 		# pause to workaround occasional "Can’t get disk" (-1728) issues
-		ERROR_1728_WORKAROUND_SLEEP_INTERVAL=2
-		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_INTERVAL seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
-		sleep $ERROR_1728_WORKAROUND_SLEEP_INTERVAL
+		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_DURATION seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
+		sleep $ERROR_1728_WORKAROUND_SLEEP_DURATION
 
 		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
 		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
@@ -518,7 +569,7 @@ else
 			true
 		else
 			echo >&2 "Failed running AppleScript"
-			hdiutil_detach_retry "${DEV_NAME}"
+			hdiutil_retry detach "${DEV_NAME}"
 			exit 64
 		fi
 		echo "Done running the AppleScript..."
@@ -560,7 +611,8 @@ fi
 echo "Deleting .fseventsd"
 rm -rf "${MOUNT_DIR}/.fseventsd" || true
 
-hdiutil_detach_retry "${DEV_NAME}"
+echo "Unmounting disk image..."
+hdiutil_retry detach "${DEV_NAME}"
 
 # Remove target if requested
 if [[ $OVERWRITE -eq 1 ]] && [[ -f "${DMG_DIR}/${DMG_NAME}" ]]; then

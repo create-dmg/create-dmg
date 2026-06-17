@@ -58,6 +58,7 @@ All contents of source\_folder will be copied into the disk image.
 - **--icon \<file_name\> \<x\> \<y\>:** set position of the file's icon
 - **--hide-extension \<file_name\>:** hide the extension of file
 - **--app-drop-link \<x\> \<y\>:** make a drop link to Applications, at location x, y
+- **--app-drop-link-name \<name\>:** set the non-empty name of the Applications drop link (default is "Applications")
 - **--ql-drop-link \<x\> \<y\>:** make a drop link to /Library/QuickLook, at location x, y
 - **--eula \<eula_file\>:** attach a license file to the dmg
 - **--rez \<rez_path\>:** specify custom path to Rez tool used to include license file
@@ -70,11 +71,13 @@ All contents of source\_folder will be copied into the disk image.
 - **--disk-image-size \<x\>:** set the disk image size manually to x MB
 - **--hdiutil-verbose:** execute hdiutil in verbose mode
 - **--hdiutil-quiet:** execute hdiutil in quiet mode
+- **--hdiutil-retries \<x\>:** specify the number of retries for the "Resource busy" error from "hdiutil create" and "hdiutil detach" (default is 5)
 - **--bless:** bless the mount folder (deprecated, needs macOS 12.2.1 or older, [#127](https://github.com/create-dmg/create-dmg/pull/127))
 - **--codesign \<signature\>:** codesign the disk image with the specified signature
 - **--notarize \<credentials>:** notarize the disk image (waits and staples) with the keychain stored credentials
     For more information check [Apple's documentation](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow)
 - **--skip-jenkins:** skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments, [#72](https://github.com/create-dmg/create-dmg/pull/72)
+- **--applescript-sleep-duration \<x\>:** specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
 - **--sandbox-safe:** hdiutil with sandbox compatibility, do not bless and do not execute the cosmetic AppleScript (not supported for APFS disk images)
 - **--version:** show tool version number
 - **-h, --help:** display the help
