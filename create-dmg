@@ -345,16 +345,6 @@ if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
 	exit 1
 fi
 
-if [[ -f "$DMG_PATH" ]]; then
-	if [[ $OVERWRITE -ne 1 ]]; then
-		echo "Output file already exists. Delete file or use the --overwrite option."
-		exit 1
-	fi
-
-	echo "Deleting existing output file..."
-	rm -f "$DMG_PATH"
-fi
-
 if [[ "${FILESYSTEM}" != "HFS+" ]] && [[ "${FILESYSTEM}" != "APFS" ]]; then
 	echo "Unknown disk image filesystem: ${FILESYSTEM}. Run 'create-dmg --help' for help."
 	exit 1
@@ -406,6 +396,16 @@ fi
 if [[ ! -d "$CDMG_SUPPORT_DIR" ]]; then
 	echo >&2 "Cannot find support/ directory: expected at: $CDMG_SUPPORT_DIR"
 	exit 1
+fi
+
+if [[ -f "$DMG_PATH" ]]; then
+	if [[ $OVERWRITE -ne 1 ]]; then
+		echo "Output file already exists. Delete file or use the --overwrite option."
+		exit 1
+	fi
+
+	echo "Deleting existing output file..."
+	rm -f "$DMG_PATH"
 fi
 
 if [[ -f "$SRC_FOLDER/.DS_Store" ]]; then
