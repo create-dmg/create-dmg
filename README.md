@@ -79,6 +79,8 @@ All contents of source\_folder will be copied into the disk image.
 - **--skip-jenkins:** skip Finder-prettifying AppleScript, useful in Sandbox and non-GUI environments, [#72](https://github.com/create-dmg/create-dmg/pull/72)
 - **--applescript-sleep-duration \<x\>:** specify the sleep duration before executing AppleScript to workaround occasional "Can’t get disk" (-1728) issues (default is 5)
 - **--sandbox-safe:** hdiutil with sandbox compatibility, do not bless and do not execute the cosmetic AppleScript (not supported for APFS disk images)
+- **--skip-finalize:** skip creating the final read-only dmg, and leave a writable one
+- **--overwrite:** overwrite the output file if it already exists
 - **--version:** show tool version number
 - **-h, --help:** display the help
 
