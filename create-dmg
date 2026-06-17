@@ -325,6 +325,12 @@ fi
 
 DMG_PATH="$1"
 SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
+shift; shift
+
+if [[ -n "$@" ]]; then
+	echo "Unexpected arguments appear after positional arguments. Run 'create-dmg --help' for help."
+	exit 1
+fi
 
 # Argument validation checks
 
