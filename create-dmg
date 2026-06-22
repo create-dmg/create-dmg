@@ -336,7 +336,7 @@ if [[ -z "$2" ]]; then
 fi
 
 DMG_PATH="$1"
-SRC_FOLDER="$(cd "$2" > /dev/null; pwd)"
+SRC_FOLDER="$(cd "$2" > /dev/null && pwd)"
 shift; shift
 
 if [[ -n "$@" ]]; then
@@ -370,7 +370,7 @@ fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DMG_DIRNAME="$(dirname "$DMG_PATH")"
-DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null; pwd)"
+DMG_DIR="$(cd "$DMG_DIRNAME" > /dev/null && pwd)"
 DMG_NAME="$(basename "$DMG_PATH")"
 DMG_TEMP_NAME="$DMG_DIR/rw.$$.${DMG_NAME}"
 
