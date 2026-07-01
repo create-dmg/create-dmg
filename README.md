@@ -117,11 +117,13 @@ Nothing except a standard installation of macOS/OS X is required.
 
 We think this works in OS X 10.6 Snow Leopard and later.
 
-We'd like to keep it working in as many versions as possible, but unfortunately, we just don't have test boxes running old versions of OS X adequate to make this happen. Development and testing mostly happens in the last 3-5 years' worth of macOS releases; as of 2020, this means macOS 10.12 and later.
+We'd like to keep it working in as many versions as possible, but unfortunately, we just don't have test boxes running old versions of OS X adequate to make this happen. Development and testing mostly happens in the last 3-5 years' worth of macOS releases; as of 2026, this means macOS 13 and later.
 
 But if you find a bug in an older version, go ahead and report it! We'll try to work with you to get it fixed.
 
-If you're running OS X 10.5 or earlier, you're SOL. That's just too hard to deal with in 2023. ;)
+If you're running OS X 10.5 or earlier, you're SOL. That's just too hard to deal with in 2026. ;)
+
+On OS X 10.6 Snow Leopard, due to Finder's unknown bug, concurrent runs of this script may race on the same volume name, so it's not recommended to do so.
 
 Alternatives
 ------------

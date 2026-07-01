@@ -1,6 +1,6 @@
-on run (volumeName)
+on run (diskName, mountDir)
 	tell application "Finder"
-		tell disk (volumeName as string)
+		tell disk (diskName as string)
 			open
 
 			set theXOrigin to WINX
@@ -10,7 +10,7 @@ on run (volumeName)
 
 			set theBottomRightX to (theXOrigin + theWidth)
 			set theBottomRightY to (theYOrigin + theHeight)
-			set dsStore to "\"" & "/Volumes/" & volumeName & "/" & ".DS_STORE\""
+			set dsStore to quoted form of (mountDir & "/.DS_STORE")
 
 			tell container window
 				set current view to icon view
@@ -51,7 +51,7 @@ on run (volumeName)
 
 		delay 1
 
-		tell disk (volumeName as string)
+		tell disk (diskName as string)
 			tell container window
 				set statusbar visible to false
 				set the bounds to {theXOrigin, theYOrigin, theBottomRightX, theBottomRightY}
