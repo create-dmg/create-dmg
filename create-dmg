@@ -344,6 +344,13 @@ if [[ -n "$@" ]]; then
 	exit 1
 fi
 
+# Environment checks
+
+if [[ "$OS_MAJOR_VERSION" -eq 10 ]] && [[ "$OS_MINOR_VERSION" -lt 6 ]]; then
+	echo "Mac OS X 10.6 Snow Leopard is the oldest supported version of the OS."
+	exit 1
+fi
+
 # Argument validation checks
 
 if [[ "${DMG_PATH: -4}" != ".dmg" ]]; then
@@ -551,8 +558,6 @@ if [[ -n "$ADD_FILE_SOURCES" ]]; then
 	done
 fi
 
-VOLUME_NAME=$(basename $MOUNT_DIR)
-
 # Run AppleScript to do all the Finder cosmetic stuff
 APPLESCRIPT_FILE=$(mktemp -t createdmg.tmp.XXXXXXXXXX)
 if [[ $SANDBOX_SAFE -eq 1 ]]; then
@@ -574,8 +579,16 @@ else
 		echo "Will sleep for $ERROR_1728_WORKAROUND_SLEEP_DURATION seconds to workaround occasions \"Can't get disk (-1728)\" issues..."
 		sleep $ERROR_1728_WORKAROUND_SLEEP_DURATION
 
-		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${VOLUME_NAME}\""
-		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${VOLUME_NAME}"; then
+		if [[ "$OS_MAJOR_VERSION" -eq 10 ]] && [[ "$OS_MINOR_VERSION" -eq 6 ]]; then
+			# For the buggy Finder on Mac OS X 10.6 Snow Leopard, otherwise "Can't get disk (-1728)" for ever.
+			# Conflict is not avoidable if there are multiple mounted volumes that
+			#   have the same volume name, so concurrently processing multiple disks may fail
+			DISK_NAME="${VOLUME_NAME}"
+		else
+			DISK_NAME="$(basename $MOUNT_DIR)"
+		fi
+		echo "Running AppleScript to make Finder stuff pretty: /usr/bin/osascript \"${APPLESCRIPT_FILE}\" \"${DISK_NAME}\" \"${MOUNT_DIR}\""
+		if /usr/bin/osascript "${APPLESCRIPT_FILE}" "${DISK_NAME}" "${MOUNT_DIR}"; then
 			# Okay, we're cool
 			true
 		else
